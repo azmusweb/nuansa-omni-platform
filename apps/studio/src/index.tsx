@@ -28,8 +28,16 @@ app.get('/posts', async (c) => {
 })
 
 // Rute Tampilan (Nuansa Architect)
-app.get('/appearance', (c) => {
-  return c.html(<Appearance currentPath={c.req.path} />)
+app.get('/appearance', async (c) => {
+  const { results } = await c.env.DB.prepare("SELECT * FROM settings").all()
+  
+  // Konversi dari array SQLite ke bentuk Objek JavaScript untuk mempermudah render
+  const settings = results.reduce((acc: any, curr: any) => {
+    acc[curr.key] = curr.value
+    return acc
+  }, {})
+
+  return c.html(<Appearance currentPath={c.req.path} settings={settings} />)
 })
 
 // Rute Media (Nuansa Vault)
@@ -104,6 +112,29 @@ app.post('/api/posts', async (c) => {
   ).bind(id, title, slug, content || '').run()
   
   return c.redirect('/posts')
+})
+
+app.post('/api/settings', async (c) => {
+  const body = await c.req.parseBody()
+  
+  const siteName = body['siteName'] as string
+  const primaryColor = body['primaryColor'] as string
+  
+  // Menyimpan (Upsert) nama situs
+  if (siteName) {
+    await c.env.DB.prepare(
+      "INSERT INTO settings (key, value) VALUES ('siteName', ?) ON CONFLICT(key) DO UPDATE SET value = ?"
+    ).bind(siteName, siteName).run()
+  }
+  
+  // Menyimpan (Upsert) warna utama
+  if (primaryColor) {
+    await c.env.DB.prepare(
+      "INSERT INTO settings (key, value) VALUES ('primaryColor', ?) ON CONFLICT(key) DO UPDATE SET value = ?"
+    ).bind(primaryColor, primaryColor).run()
+  }
+  
+  return c.redirect('/appearance')
 })
 
 export default app

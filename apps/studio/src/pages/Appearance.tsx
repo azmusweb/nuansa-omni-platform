@@ -1,45 +1,97 @@
 import type { FC } from 'hono/jsx'
 import { Layout } from '../components/Layout'
 
-export const Appearance: FC<{ currentPath: string }> = ({ currentPath }) => {
+export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ currentPath, settings = {} }) => {
+  const siteName = settings['siteName'] || 'Nuansa Omni-Platform'
+  const primaryColor = settings['primaryColor'] || '#3b82f6' // Default blue
+
   return (
     <Layout title="Editor Tata Letak (Architect)" currentPath={currentPath}>
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-10rem)]">
         {/* Left Toolbar */}
-        <div class="col-span-1 bg-dark-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-4 shadow-xl flex flex-col">
-          <h3 class="text-white font-semibold mb-4 px-2">Komponen Situs</h3>
-          <div class="space-y-2 flex-1 overflow-y-auto">
-            {['Header / Navigasi', 'Hero Section', 'Daftar Artikel', 'Bilah Sisi (Sidebar)', 'Footer'].map((item) => (
-              <button class="w-full text-left px-4 py-3 bg-dark-900/50 hover:bg-brand-500/10 text-slate-300 hover:text-brand-400 border border-transparent hover:border-brand-500/30 rounded-xl transition font-medium text-sm">
-                {item}
+        <div class="col-span-1 bg-dark-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-5 shadow-xl flex flex-col">
+          <h3 class="text-white font-semibold mb-6 px-2 border-b border-slate-700/50 pb-4">Pengaturan Situs</h3>
+          
+          <form action="/api/settings" method="POST" class="flex flex-col flex-1">
+            <div class="space-y-5 flex-1 overflow-y-auto px-2">
+              
+              <div>
+                <label class="block text-slate-300 text-sm font-medium mb-2">Nama Situs</label>
+                <input 
+                  type="text" 
+                  name="siteName" 
+                  value={siteName}
+                  class="w-full bg-dark-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                  placeholder="Contoh: Nuansa Blog"
+                />
+              </div>
+
+              <div>
+                <label class="block text-slate-300 text-sm font-medium mb-2">Warna Utama Tema</label>
+                <div class="flex items-center gap-4">
+                  <input 
+                    type="color" 
+                    name="primaryColor" 
+                    value={primaryColor}
+                    id="colorPicker"
+                    class="h-10 w-16 rounded cursor-pointer bg-dark-900 border border-slate-700"
+                  />
+                  <span class="text-slate-400 font-mono text-sm" id="colorHex">{primaryColor}</span>
+                </div>
+                <p class="text-slate-500 text-xs mt-2">Warna ini akan mengubah aksen tombol dan tautan pada situs publik Anda.</p>
+              </div>
+              
+            </div>
+
+            <div class="pt-6 mt-4">
+              <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white py-2.5 rounded-xl font-medium text-sm transition shadow-lg shadow-brand-500/20">
+                Simpan Perubahan
               </button>
-            ))}
-          </div>
-          <div class="pt-4 border-t border-slate-700/50 mt-4">
-            <button class="w-full bg-brand-600 hover:bg-brand-500 text-white py-2.5 rounded-xl font-medium text-sm transition shadow-lg shadow-brand-500/20">
-              Simpan Perubahan
-            </button>
-          </div>
+            </div>
+          </form>
         </div>
 
         {/* Visual Preview Area */}
         <div class="col-span-1 lg:col-span-3 bg-dark-900 border border-slate-700/50 rounded-2xl shadow-xl overflow-hidden flex flex-col">
           <div class="bg-dark-800 px-4 py-3 flex items-center justify-center gap-4 border-b border-slate-700/50">
-            <button class="p-2 bg-dark-900 rounded-lg text-slate-400 hover:text-white transition"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-.464 5.535a1 1 0 10-1.415-1.414 3 3 0 01-4.242 0 1 1 0 00-1.415 1.414 5 5 0 007.072 0z" clip-rule="evenodd"></path></svg></button>
             <div class="px-6 py-1.5 bg-dark-900 text-slate-400 text-xs font-mono rounded-lg border border-slate-700/50">Pratinjau Langsung (Resolusi Desktop)</div>
-            <button class="p-2 bg-dark-900 rounded-lg text-slate-400 hover:text-white transition"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path></svg></button>
           </div>
-          <div class="flex-1 bg-white flex items-center justify-center relative overflow-hidden">
-             {/* Mockup Preview */}
-             <div class="absolute inset-0 bg-slate-100 flex flex-col items-center justify-center opacity-80 pointer-events-none">
-                <p class="text-slate-400 text-sm mb-4">Area Kanvas (Visual Builder berbasis Tailwind)</p>
-                <div class="w-3/4 h-64 border-2 border-dashed border-slate-300 rounded-2xl flex items-center justify-center bg-white/50">
-                  <span class="text-brand-500 font-semibold tracking-widest">DRAG & DROP AREA</span>
+          
+          <div class="flex-1 bg-white relative overflow-hidden" id="previewArea">
+             {/* Mockup Preview - Reacting to colors */}
+             <div class="h-full flex flex-col">
+                {/* Header Mockup */}
+                <header class="h-16 border-b flex items-center justify-between px-8">
+                  <div class="font-bold text-xl tracking-tight" style={`color: ${primaryColor}`} id="previewSiteName">{siteName}</div>
+                  <nav class="flex gap-6 text-sm font-medium text-slate-600">
+                    <span>Beranda</span>
+                    <span>Artikel</span>
+                    <span>Tentang</span>
+                  </nav>
+                </header>
+                
+                {/* Hero Mockup */}
+                <div class="flex-1 flex flex-col items-center justify-center text-center px-4 bg-slate-50">
+                  <h1 class="text-4xl font-extrabold text-slate-900 mb-4">Selamat Datang di {siteName}</h1>
+                  <p class="text-slate-500 max-w-lg mb-8">Ini adalah simulasi bagaimana warna dan nama situs Anda akan terlihat oleh publik di seluruh dunia.</p>
+                  <button class="px-8 py-3 rounded-full text-white font-medium shadow-lg" style={`background-color: ${primaryColor}`} id="previewButton">
+                    Mulai Membaca
+                  </button>
                 </div>
              </div>
           </div>
         </div>
       </div>
+      
+      {/* Script mungil untuk membuat preview langsung bereaksi saat color picker digeser (Client Side JS) */}
+      <script dangerouslySetInnerHTML={{__html: `
+        document.getElementById('colorPicker').addEventListener('input', function(e) {
+          const color = e.target.value;
+          document.getElementById('colorHex').textContent = color;
+          document.getElementById('previewSiteName').style.color = color;
+          document.getElementById('previewButton').style.backgroundColor = color;
+        });
+      `}} />
     </Layout>
   )
 }
