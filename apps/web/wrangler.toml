@@ -1,0 +1,8 @@
+name = "nuansa-web"
+main = "src/index.tsx"
+compatibility_date = "2024-03-20"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nuansa-tenant-db"
+database_id = "cff9dfe9-92ed-47cd-a73f-1571535d3a00"
