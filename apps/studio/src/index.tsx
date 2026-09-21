@@ -17,8 +17,27 @@ app.get('/', (c) => c.redirect('/dashboard'))
 // --- RUTE HALAMAN UI ---
 
 // Rute Dasbor
-app.get('/dashboard', (c) => {
-  return c.html(<Dashboard currentPath={c.req.path} />)
+app.get('/dashboard', async (c) => {
+  // 1. Dapatkan Total Artikel
+  const { results: postCountResult } = await c.env.DB.prepare("SELECT COUNT(*) as count FROM posts").all()
+  const postCount = (postCountResult[0] as any)?.count || 0
+
+  // 2. Dapatkan Aktivitas Terbaru (3 artikel terakhir)
+  const { results: recentPosts } = await c.env.DB.prepare("SELECT title, created_at FROM posts ORDER BY created_at DESC LIMIT 3").all()
+
+  // 3. Hitung Total Penyimpanan Media dari R2
+  const list = await c.env.VAULT_BUCKET.list()
+  let totalBytes = 0
+  list.objects.forEach(obj => totalBytes += obj.size)
+  const mediaMB = (totalBytes / 1024 / 1024).toFixed(2)
+
+  const stats = {
+    visitors: 'Tersedia Segera', // Akan diintegrasikan dengan Workers Analytics Engine nanti
+    posts: postCount.toString(),
+    media: `${mediaMB} MB`
+  }
+
+  return c.html(<Dashboard currentPath={c.req.path} stats={stats} recentPosts={recentPosts} />)
 })
 
 // Rute Artikel (Nuansa Nodes)

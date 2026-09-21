@@ -1,15 +1,19 @@
 import type { FC } from 'hono/jsx'
 import { Layout } from '../components/Layout'
 
-export const Dashboard: FC<{ currentPath: string }> = ({ currentPath }) => {
+export const Dashboard: FC<{ 
+  currentPath: string,
+  stats?: { visitors: string, posts: string, media: string },
+  recentPosts?: any[]
+}> = ({ currentPath, stats, recentPosts = [] }) => {
   return (
     <Layout title="Dasbor Ikhtisar" currentPath={currentPath}>
       {/* Metrics Grid */}
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {[
-          { label: 'Total Pengunjung', value: '124.5K', trend: '+12.5%', color: 'text-emerald-400' },
-          { label: 'Artikel Aktif', value: '842', trend: '+3', color: 'text-brand-400' },
-          { label: 'Penyimpanan Media', value: '45.2 GB', trend: 'Aman', color: 'text-slate-400' }
+          { label: 'Total Pengunjung', value: stats?.visitors || '0', trend: 'Sedang Disiapkan', color: 'text-slate-400' },
+          { label: 'Artikel Aktif', value: stats?.posts || '0', trend: 'Tersimpan di D1', color: 'text-brand-400' },
+          { label: 'Penyimpanan Media', value: stats?.media || '0 MB', trend: 'Tersimpan di R2', color: 'text-emerald-400' }
         ].map((metric) => (
           <div class="bg-dark-800/50 backdrop-blur-sm border border-slate-700/50 p-6 rounded-2xl shadow-xl hover:bg-dark-800 transition">
             <h3 class="text-slate-400 text-sm font-medium mb-2">{metric.label}</h3>
@@ -36,19 +40,32 @@ export const Dashboard: FC<{ currentPath: string }> = ({ currentPath }) => {
         <div class="bg-dark-800/50 backdrop-blur-sm border border-slate-700/50 p-6 rounded-2xl shadow-xl">
           <h3 class="text-lg font-semibold text-white mb-6">Aktivitas Terbaru</h3>
           <div class="space-y-6">
-            {[
-              { title: 'Artikel "Mengenal Edge Computing" diterbitkan', time: '2 jam yang lalu' },
-              { title: 'Gambar sampul diperbarui', time: '5 jam yang lalu' },
-              { title: 'Tema "Dark Elegance" diaktifkan', time: '1 hari yang lalu' },
-            ].map((activity) => (
-              <div class="flex gap-4">
-                <div class="w-2 h-2 mt-2 rounded-full bg-brand-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
-                <div>
-                  <p class="text-sm text-slate-200">{activity.title}</p>
-                  <p class="text-xs text-slate-500 mt-1">{activity.time}</p>
-                </div>
+            {recentPosts.length === 0 ? (
+              <p class="text-sm text-slate-500">Belum ada aktivitas penulisan artikel.</p>
+            ) : (
+              recentPosts.map((activity) => {
+                const date = new Date(activity.created_at)
+                // Format tanggal misal: "12 Okt 2026, 14:30"
+                const formattedTime = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' })
+                return (
+                  <div class="flex gap-4">
+                    <div class="w-2 h-2 mt-2 rounded-full bg-brand-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] flex-shrink-0"></div>
+                    <div>
+                      <p class="text-sm text-slate-200">Artikel <span class="font-semibold text-white">"{activity.title}"</span> diterbitkan</p>
+                      <p class="text-xs text-slate-500 mt-1">{formattedTime}</p>
+                    </div>
+                  </div>
+                )
+              })
+            )}
+            {/* Teks statis tambahan untuk menunjukkan sistem hidup */}
+            <div class="flex gap-4 opacity-50">
+              <div class="w-2 h-2 mt-2 rounded-full bg-slate-500 flex-shrink-0"></div>
+              <div>
+                <p class="text-sm text-slate-400">Sistem Dasbor Dinamis diaktifkan</p>
+                <p class="text-xs text-slate-500 mt-1">Sistem Otomatis</p>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </div>
