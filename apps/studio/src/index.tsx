@@ -6,6 +6,7 @@ import { Vault } from './pages/Vault'
 
 type Bindings = {
   VAULT_BUCKET: R2Bucket
+  DB: D1Database
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -21,8 +22,9 @@ app.get('/dashboard', (c) => {
 })
 
 // Rute Artikel (Nuansa Nodes)
-app.get('/posts', (c) => {
-  return c.html(<Posts currentPath={c.req.path} />)
+app.get('/posts', async (c) => {
+  const { results } = await c.env.DB.prepare("SELECT * FROM posts ORDER BY created_at DESC").all()
+  return c.html(<Posts currentPath={c.req.path} posts={results} />)
 })
 
 // Rute Tampilan (Nuansa Architect)
@@ -81,6 +83,27 @@ app.get('/media/:key', async (c) => {
   headers.set('Cache-Control', 'public, max-age=31536000')
   
   return new Response(object.body, { headers })
+})
+
+// --- RUTE API (D1 DATABASE) ---
+
+app.post('/api/posts', async (c) => {
+  const body = await c.req.parseBody()
+  const title = body['title'] as string
+  const content = body['content'] as string
+  
+  if (!title) {
+    return c.text('Judul diperlukan', 400)
+  }
+
+  const id = crypto.randomUUID()
+  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4)
+  
+  await c.env.DB.prepare(
+    "INSERT INTO posts (id, title, slug, content) VALUES (?, ?, ?, ?)"
+  ).bind(id, title, slug, content || '').run()
+  
+  return c.redirect('/posts')
 })
 
 export default app
