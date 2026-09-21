@@ -6,3 +6,7 @@ compatibility_date = "2024-03-20"
 # binding = "DB"
 # database_name = "nuansa-tenant-db"
 # database_id = "your-database-id-here"
+
+[[r2_buckets]]
+binding = "VAULT_BUCKET"
+bucket_name = "nuansa-vault"
