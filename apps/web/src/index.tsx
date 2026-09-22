@@ -103,6 +103,7 @@ const Layout: FC<{ title: string, siteName: string, primaryColor: string, adsens
             <div class="flex items-center gap-6">
               <nav class="hidden md:flex gap-8 text-sm font-medium text-slate-600 dark:text-slate-400">
                 <a href="/" class="hover:text-theme dark:hover:text-theme transition">Beranda</a>
+                <a href="/belajar" class="hover:text-theme dark:hover:text-theme transition">Belajar</a>
                 <a href="/katalog" class="hover:text-theme dark:hover:text-theme transition">Katalog Produk</a>
                 <a href="#" class="hover:text-theme dark:hover:text-theme transition">Tentang Kami</a>
               </nav>
@@ -455,11 +456,316 @@ app.post('/api/order', async (c) => {
       "INSERT INTO orders (id, product_id, customer_name, customer_phone, quantity, total_price, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')"
     ).bind(crypto.randomUUID(), productId, customerName, customerPhone, quantity, totalPrice).run()
 
-    // Redirect ke WhatsApp
     if (waUrl) return c.redirect(waUrl)
     return c.redirect('/katalog')
   } catch (e) {
     return c.redirect('/katalog')
+  }
+})
+
+// ── NUANSA LEARN PUBLIC ROUTES ─────────────────────────────────
+
+// Katalog Kursus
+app.get('/belajar', async (c) => {
+  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings").all()
+  const settings = rawSettings.reduce((acc: any, curr: any) => { acc[curr.key] = curr.value; return acc }, {})
+  const siteName = settings['siteName'] || 'Nuansa Web'
+  const primaryColor = settings['primaryColor'] || '#3b82f6'
+
+  let adsenseId = ''
+  try {
+    const { results: ms } = await c.env.MASTER_DB.prepare("SELECT * FROM settings WHERE key = 'adsense_master_id'").all()
+    if (ms?.length) adsenseId = ms[0].value as string
+  } catch(e) {}
+
+  let courses: any[] = []
+  try {
+    const { results } = await c.env.DB.prepare(
+      "SELECT c.*, (SELECT COUNT(*) FROM lessons l WHERE l.course_id = c.id) as lesson_count FROM courses c WHERE c.is_published = 1 ORDER BY c.created_at DESC"
+    ).all()
+    courses = results
+  } catch(e) {}
+
+  return c.html(
+    <Layout title={`Belajar - ${siteName}`} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId}>
+      <section class="bg-theme text-white py-20 text-center px-6">
+        <div class="max-w-3xl mx-auto">
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 text-sm font-medium mb-6">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            Nuansa Learn
+          </div>
+          <h1 class="text-4xl md:text-5xl font-extrabold mb-4">Belajar dari Ahlinya</h1>
+          <p class="text-lg opacity-90">Kursus terstruktur, langsung dari para praktisi. Belajar kapanpun, dimanapun.</p>
+        </div>
+      </section>
+
+      <section class="max-w-5xl mx-auto px-6 py-16">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Semua Kursus</h2>
+          <span class="text-sm text-slate-500">{courses.length} kursus tersedia</span>
+        </div>
+
+        {courses.length === 0 ? (
+          <div class="glassmorphism rounded-2xl border border-slate-200 dark:border-slate-800 p-16 text-center">
+            <p class="text-slate-500 dark:text-slate-400">Belum ada kursus yang tersedia. Kunjungi kembali nanti!</p>
+          </div>
+        ) : (
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {courses.map((course: any) => (
+              <a href={`/belajar/${course.slug}`} class="group glassmorphism rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1 flex flex-col">
+                <div class="h-44 bg-gradient-to-br from-indigo-500 to-purple-600 relative overflow-hidden">
+                  {course.cover_image ? (
+                    <img src={course.cover_image} alt={course.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <svg class="w-12 h-12 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </div>
+                  )}
+                </div>
+                <div class="p-5 flex flex-col flex-1">
+                  <div class="text-xs font-semibold text-indigo-500 uppercase tracking-wider mb-2">{course.lesson_count} Materi</div>
+                  <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2 line-clamp-2 group-hover:text-indigo-600 transition">{course.title}</h3>
+                  <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-4 flex-1">{course.description}</p>
+                  <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <span class="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">
+                      {course.price === 0 ? '🎓 Gratis' : `Rp ${course.price.toLocaleString('id-ID')}`}
+                    </span>
+                    <span class="text-xs text-slate-400">Lihat Kursus →</span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+    </Layout>
+  )
+})
+
+// Detail Kursus
+app.get('/belajar/:slug', async (c) => {
+  const slug = c.req.param('slug')
+  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings").all()
+  const settings = rawSettings.reduce((acc: any, curr: any) => { acc[curr.key] = curr.value; return acc }, {})
+  const siteName = settings['siteName'] || 'Nuansa Web'
+  const primaryColor = settings['primaryColor'] || '#3b82f6'
+
+  let adsenseId = ''
+  try {
+    const { results: ms } = await c.env.MASTER_DB.prepare("SELECT * FROM settings WHERE key = 'adsense_master_id'").all()
+    if (ms?.length) adsenseId = ms[0].value as string
+  } catch(e) {}
+
+  const course: any = await c.env.DB.prepare("SELECT * FROM courses WHERE slug = ? AND is_published = 1").bind(slug).first()
+  if (!course) return c.redirect('/belajar')
+
+  const { results: lessons } = await c.env.DB.prepare(
+    "SELECT id, title, order_index, is_preview FROM lessons WHERE course_id = ? ORDER BY order_index ASC"
+  ).bind(course.id).all()
+
+  // Cek enrollment cookie
+  const enrollToken = getCookie(c, `enroll_${course.id}`)
+  const isEnrolled = course.price === 0 || (enrollToken && enrollToken.startsWith(`enrolled_${course.id}`))
+
+  return c.html(
+    <Layout title={`${course.title} - ${siteName}`} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId}>
+      <div class="max-w-4xl mx-auto px-6 py-16">
+        <a href="/belajar" class="inline-flex items-center text-sm text-slate-500 hover:text-theme transition mb-8">
+          &larr; Semua Kursus
+        </a>
+
+        <div class="grid md:grid-cols-3 gap-8">
+          {/* Kiri: Info Kursus */}
+          <div class="md:col-span-2">
+            <div class="h-64 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 mb-6 overflow-hidden">
+              {course.cover_image && <img src={course.cover_image} alt={course.title} class="w-full h-full object-cover" />}
+            </div>
+            <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mb-3">{course.title}</h1>
+            <p class="text-slate-600 dark:text-slate-400 mb-8">{course.description}</p>
+
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Daftar Materi</h2>
+            <div class="space-y-2">
+              {(lessons as any[]).map((lesson: any, idx: number) => {
+                const canAccess = isEnrolled || lesson.is_preview
+                return (
+                  <div class="glassmorphism rounded-xl border border-slate-200 dark:border-slate-800 p-4 flex items-center gap-3">
+                    <div class={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${canAccess ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                      {canAccess ? idx + 1 : '🔒'}
+                    </div>
+                    <div class="flex-1">
+                      {canAccess ? (
+                        <a href={`/belajar/${course.slug}/${lesson.id}`} class="font-medium text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                          {lesson.title}
+                        </a>
+                      ) : (
+                        <span class="font-medium text-slate-400">{lesson.title}</span>
+                      )}
+                    </div>
+                    {lesson.is_preview && (
+                      <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 shrink-0">Gratis</span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Kanan: CTA Enroll */}
+          <div class="md:col-span-1">
+            <div class="glassmorphism rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sticky top-24">
+              <div class="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-2">
+                {course.price === 0 ? 'Gratis' : `Rp ${course.price.toLocaleString('id-ID')}`}
+              </div>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">{lessons.length} materi &bull; Akses seumur hidup</p>
+
+              {isEnrolled ? (
+                <div>
+                  <div class="w-full text-center py-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold mb-3">✓ Sudah Terdaftar</div>
+                  {lessons.length > 0 && (
+                    <a href={`/belajar/${course.slug}/${(lessons[0] as any).id}`} class="w-full block text-center py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition">
+                      Mulai Belajar →
+                    </a>
+                  )}
+                </div>
+              ) : (
+                <form action="/api/enroll" method="POST">
+                  <input type="hidden" name="course_id" value={course.id} />
+                  <input type="hidden" name="course_slug" value={course.slug} />
+                  <input type="hidden" name="price" value={course.price} />
+                  {course.price > 0 && (
+                    <input type="email" name="email" required placeholder="Masukkan email Anda" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 mb-3 transition" />
+                  )}
+                  <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition">
+                    {course.price === 0 ? 'Daftar Gratis' : `Beli Kursus → Rp ${course.price.toLocaleString('id-ID')}`}
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  )
+})
+
+// Baca Materi (Lesson Reader)
+app.get('/belajar/:slug/:lessonId', async (c) => {
+  const slug = c.req.param('slug')
+  const lessonId = c.req.param('lessonId')
+
+  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings").all()
+  const settings = rawSettings.reduce((acc: any, curr: any) => { acc[curr.key] = curr.value; return acc }, {})
+  const siteName = settings['siteName'] || 'Nuansa Web'
+  const primaryColor = settings['primaryColor'] || '#3b82f6'
+
+  const course: any = await c.env.DB.prepare("SELECT * FROM courses WHERE slug = ?").bind(slug).first()
+  if (!course) return c.redirect('/belajar')
+
+  const lesson: any = await c.env.DB.prepare("SELECT * FROM lessons WHERE id = ? AND course_id = ?").bind(lessonId, course.id).first()
+  if (!lesson) return c.redirect(`/belajar/${slug}`)
+
+  const { results: allLessons } = await c.env.DB.prepare(
+    "SELECT id, title, order_index, is_preview FROM lessons WHERE course_id = ? ORDER BY order_index ASC"
+  ).bind(course.id).all()
+
+  const enrollToken = getCookie(c, `enroll_${course.id}`)
+  const isEnrolled = course.price === 0 || (enrollToken && enrollToken.startsWith(`enrolled_${course.id}`))
+
+  if (!isEnrolled && !lesson.is_preview) {
+    return c.redirect(`/belajar/${slug}`)
+  }
+
+  const currentIdx = (allLessons as any[]).findIndex(l => l.id === lessonId)
+  const prevLesson = currentIdx > 0 ? (allLessons as any[])[currentIdx - 1] : null
+  const nextLesson = currentIdx < allLessons.length - 1 ? (allLessons as any[])[currentIdx + 1] : null
+
+  return c.html(
+    <Layout title={`${lesson.title} - ${course.title} | ${siteName}`} siteName={siteName} primaryColor={primaryColor}>
+      <div class="max-w-5xl mx-auto px-6 py-10 grid md:grid-cols-4 gap-8">
+        {/* Sidebar Daftar Materi */}
+        <aside class="md:col-span-1">
+          <div class="glassmorphism rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sticky top-24">
+            <a href={`/belajar/${slug}`} class="text-xs font-semibold text-slate-500 hover:text-indigo-500 transition flex items-center gap-1 mb-4">
+              ← {course.title}
+            </a>
+            <div class="space-y-1">
+              {(allLessons as any[]).map((l: any, idx: number) => {
+                const canAccess = isEnrolled || l.is_preview
+                const isActive = l.id === lessonId
+                return canAccess ? (
+                  <a href={`/belajar/${slug}/${l.id}`} class={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition ${isActive ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
+                    <span class="shrink-0 w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 text-xs flex items-center justify-center font-bold">{idx + 1}</span>
+                    <span class="line-clamp-2">{l.title}</span>
+                  </a>
+                ) : (
+                  <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-400">
+                    <span class="shrink-0 text-xs">🔒</span>
+                    <span class="line-clamp-2">{l.title}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </aside>
+
+        {/* Konten Materi */}
+        <main class="md:col-span-3">
+          <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mb-8">{lesson.title}</h1>
+          <div class="prose prose-lg prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-indigo-600">
+            <div dangerouslySetInnerHTML={{__html: lesson.content || '<p class="text-slate-500">Konten materi belum ditambahkan.</p>'}} />
+          </div>
+
+          {/* Navigasi Antar Materi */}
+          <div class="flex items-center justify-between mt-12 pt-8 border-t border-slate-200 dark:border-slate-800">
+            {prevLesson ? (
+              <a href={`/belajar/${slug}/${(prevLesson as any).id}`} class="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600 transition">
+                ← {(prevLesson as any).title}
+              </a>
+            ) : <div />}
+            {nextLesson ? (
+              <a href={`/belajar/${slug}/${(nextLesson as any).id}`} class="flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-500 transition">
+                {(nextLesson as any).title} →
+              </a>
+            ) : (
+              <a href={`/belajar/${slug}`} class="flex items-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-500 transition">
+                ✓ Selesai! Kembali ke kursus
+              </a>
+            )}
+          </div>
+        </main>
+      </div>
+    </Layout>
+  )
+})
+
+// Endpoint Enroll (Daftar Kursus)
+app.post('/api/enroll', async (c) => {
+  try {
+    const body = await c.req.parseBody()
+    const courseId = body['course_id'] as string
+    const courseSlug = body['course_slug'] as string
+    const price = parseInt(body['price'] as string) || 0
+    const email = (body['email'] as string) || 'gratis@nuansa.web.id'
+
+    const token = `enrolled_${courseId}_${crypto.randomUUID()}`
+
+    // Simpan enrollment ke DB
+    await c.env.DB.prepare(
+      "INSERT INTO enrollments (id, course_id, student_email, access_token) VALUES (?, ?, ?, ?)"
+    ).bind(crypto.randomUUID(), courseId, email, token).run()
+
+    // Set cookie akses (30 hari)
+    setCookie(c, `enroll_${courseId}`, token, {
+      maxAge: 60 * 60 * 24 * 30,
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax',
+    })
+
+    return c.redirect(`/belajar/${courseSlug}`)
+  } catch(e) {
+    console.error(e)
+    return c.redirect('/belajar')
   }
 })
 

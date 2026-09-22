@@ -85,11 +85,41 @@ export const analytics = sqliteTable('analytics', {
 
 export const orders = sqliteTable('orders', {
   id: text('id').primaryKey(),
-  productId: text('product_id').notNull(), // can link to products.id but loose relation is fine for now
+  productId: text('product_id').notNull(),
   customerName: text('customer_name').notNull(),
   customerPhone: text('customer_phone').notNull(),
   quantity: integer('quantity').notNull().default(1),
   totalPrice: integer('total_price').notNull().default(0),
-  status: text('status').notNull().default('pending'), // 'pending', 'processed', 'completed', 'cancelled'
+  status: text('status').notNull().default('pending'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
+});
+
+// Nuansa Learn
+export const courses = sqliteTable('courses', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  slug: text('slug').notNull().unique(),
+  description: text('description'),
+  coverImage: text('cover_image'),
+  price: integer('price').notNull().default(0),
+  isPublished: integer('is_published', { mode: 'boolean' }).default(false),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
+});
+
+export const lessons = sqliteTable('lessons', {
+  id: text('id').primaryKey(),
+  courseId: text('course_id').notNull(),
+  title: text('title').notNull(),
+  content: text('content'),
+  orderIndex: integer('order_index').notNull().default(0),
+  isPreview: integer('is_preview', { mode: 'boolean' }).default(false),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
+});
+
+export const enrollments = sqliteTable('enrollments', {
+  id: text('id').primaryKey(),
+  courseId: text('course_id').notNull(),
+  studentEmail: text('student_email').notNull(),
+  accessToken: text('access_token').notNull().unique(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
 });

@@ -11,6 +11,8 @@ import { Tools } from './pages/Tools'
 import { Audit } from './pages/Audit'
 import { Products } from './pages/Products'
 import { Orders } from './pages/Orders'
+import { Learn } from './pages/Learn'
+import { Lessons } from './pages/Lessons'
 import { createDb, tenants, users, transactions, products } from '@nuansa/db'
 import { desc } from 'drizzle-orm'
 import type { FC } from 'hono/jsx'
@@ -462,11 +464,111 @@ app.post('/api/orders/update', async (c) => {
     const body = await c.req.parseBody()
     const id = body['id'] as string
     const status = body['status'] as string
-    
     if (id && status) {
       await c.env.DB.prepare("UPDATE orders SET status = ? WHERE id = ?").bind(status, id).run()
     }
     return c.redirect('/orders')
+  } catch (e) {
+    return c.text('Error', 500)
+  }
+})
+
+// --- NUANSA LEARN ROUTES ---
+
+app.get('/learn', async (c) => {
+  try {
+    const { results } = await c.env.DB.prepare(
+      "SELECT c.*, (SELECT COUNT(*) FROM lessons l WHERE l.course_id = c.id) as lesson_count FROM courses c ORDER BY c.created_at DESC"
+    ).all()
+    return c.html(<Learn currentPath={c.req.path} courses={results as any[]} />)
+  } catch (e) {
+    return c.html(<Learn currentPath={c.req.path} courses={[]} />)
+  }
+})
+
+app.get('/learn/:courseId/lessons', async (c) => {
+  try {
+    const courseId = c.req.param('courseId')
+    const course: any = await c.env.DB.prepare("SELECT * FROM courses WHERE id = ?").bind(courseId).first()
+    if (!course) return c.redirect('/learn')
+    const { results: lessons } = await c.env.DB.prepare("SELECT * FROM lessons WHERE course_id = ? ORDER BY order_index ASC").bind(courseId).all()
+    return c.html(<Lessons currentPath={c.req.path} course={course} lessons={lessons as any[]} />)
+  } catch (e) {
+    return c.redirect('/learn')
+  }
+})
+
+app.post('/api/learn/course', async (c) => {
+  try {
+    const body = await c.req.parseBody()
+    const id = body['id'] as string
+    const title = body['title'] as string
+    const description = body['description'] as string
+    const cover_image = body['cover_image'] as string
+    const price = parseInt(body['price'] as string) || 0
+    const is_published = body['is_published'] === '1' ? 1 : 0
+    if (id) {
+      await c.env.DB.prepare(
+        "UPDATE courses SET title=?, description=?, cover_image=?, price=?, is_published=? WHERE id=?"
+      ).bind(title, description||null, cover_image||null, price, is_published, id).run()
+    } else {
+      const newId = crypto.randomUUID()
+      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)+/g,'') + '-' + Date.now().toString().slice(-4)
+      await c.env.DB.prepare(
+        "INSERT INTO courses (id, title, slug, description, cover_image, price, is_published) VALUES (?,?,?,?,?,?,?)"
+      ).bind(newId, title, slug, description||null, cover_image||null, price, is_published).run()
+    }
+    return c.redirect('/learn')
+  } catch (e) {
+    console.error(e)
+    return c.text('Error', 500)
+  }
+})
+
+app.post('/api/learn/course/delete', async (c) => {
+  try {
+    const body = await c.req.parseBody()
+    const id = body['id'] as string
+    await c.env.DB.prepare("DELETE FROM lessons WHERE course_id = ?").bind(id).run()
+    await c.env.DB.prepare("DELETE FROM courses WHERE id = ?").bind(id).run()
+    return c.redirect('/learn')
+  } catch (e) {
+    return c.text('Error', 500)
+  }
+})
+
+app.post('/api/learn/lesson', async (c) => {
+  try {
+    const body = await c.req.parseBody()
+    const id = body['id'] as string
+    const course_id = body['course_id'] as string
+    const title = body['title'] as string
+    const content = body['content'] as string
+    const order_index = parseInt(body['order_index'] as string) || 0
+    const is_preview = body['is_preview'] === '1' ? 1 : 0
+    if (id) {
+      await c.env.DB.prepare(
+        "UPDATE lessons SET title=?, content=?, order_index=?, is_preview=? WHERE id=?"
+      ).bind(title, content||null, order_index, is_preview, id).run()
+    } else {
+      await c.env.DB.prepare(
+        "INSERT INTO lessons (id, course_id, title, content, order_index, is_preview) VALUES (?,?,?,?,?,?)"
+      ).bind(crypto.randomUUID(), course_id, title, content||null, order_index, is_preview).run()
+    }
+    return c.redirect(`/learn/${course_id}/lessons`)
+  } catch (e) {
+    console.error(e)
+    return c.text('Error', 500)
+  }
+})
+
+app.post('/api/learn/lesson/delete', async (c) => {
+  try {
+    const body = await c.req.parseBody()
+    const id = body['id'] as string
+    const course_id = body['course_id'] as string
+    await c.env.DB.prepare("DELETE FROM lessons WHERE id = ?").bind(id).run()
+    return c.redirect(`/learn/${course_id}/lessons`)
   } catch (e) {
     return c.text('Error', 500)
   }
