@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { jsxRenderer } from 'hono/jsx-renderer'
-import { createDb, tenants, users } from '@nuansa/db'
-import type { FC } from 'hono/jsx'
+import { getCookie, setCookie } from 'hono/cookie'
+import { createDb, tenants, transactions } from '@nuansa/db'
 
 type Bindings = {
   DB: D1Database
@@ -51,43 +51,79 @@ app.get(
   })
 )
 
-// Komponen Halaman Pendaftaran Sukses
-const SuccessPage: FC<{ tenantId: string }> = ({ tenantId }) => (
-  <div class="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
-    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
-    <div class="glass max-w-lg w-full p-10 rounded-3xl shadow-2xl relative z-10 text-center border-emerald-500/30">
-      <div class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-        <svg class="w-10 h-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-      </div>
-      <h2 class="text-3xl font-bold text-white mb-4">Pendaftaran Berhasil!</h2>
-      <p class="text-slate-400 mb-8 leading-relaxed">
-        Ruang kerja CMS untuk klien Anda telah disiapkan. Harap simpan <strong class="text-white">Tenant ID</strong> ini dengan aman karena akan digunakan untuk mengonfigurasi Nuansa Studio mereka.
-      </p>
-      <div class="bg-dark-900/50 p-4 rounded-xl border border-slate-700/50 mb-8 font-mono text-sm break-all text-brand-400">
-        {tenantId}
-      </div>
-      <a href="/" class="inline-block bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_0_15px_rgba(2,132,199,0.5)]">
-        Kembali ke Beranda
-      </a>
-    </div>
-  </div>
-)
+// Middleware Autentikasi Master
+app.use('*', async (c, next) => {
+  const path = c.req.path
+  if (path === '/login' || path === '/api/login') {
+    return next()
+  }
 
-// Rute Landing Page (UI)
-app.get('/', (c) => {
+  const token = getCookie(c, 'master_auth')
+  if (token !== 'authenticated') {
+    return c.redirect('/login')
+  }
+
+  return next()
+})
+
+// Rute Login UI
+app.get('/login', (c) => {
+  return c.render(
+    <div class="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+      <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] pointer-events-none"></div>
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[600px] opacity-20 pointer-events-none">
+        <div class="absolute top-[-20%] left-[20%] w-[400px] h-[400px] rounded-full bg-brand-600 blur-[100px] mix-blend-screen"></div>
+        <div class="absolute bottom-[-20%] right-[20%] w-[300px] h-[300px] rounded-full bg-indigo-600 blur-[100px] mix-blend-screen"></div>
+      </div>
+
+      <div class="glass w-full max-w-md p-10 rounded-3xl shadow-2xl relative z-10 text-center border border-slate-700/50">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-400 to-indigo-600 flex items-center justify-center shadow-lg mx-auto mb-6">
+          <span class="font-bold text-white text-3xl">M</span>
+        </div>
+        <h1 class="text-2xl font-bold text-white mb-2">Nuansa Master</h1>
+        <p class="text-slate-400 mb-8">Masukkan PIN Keamanan</p>
+        
+        <form action="/api/login" method="POST" class="space-y-6">
+          <div>
+            <input 
+              type="password" 
+              name="pin" 
+              placeholder="••••••" 
+              class="w-full bg-dark-900/50 border border-slate-700/50 rounded-xl px-4 py-4 text-center text-2xl tracking-[0.5em] text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition shadow-inner"
+              required 
+              autofocus
+            />
+          </div>
+          <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-brand-500/20">
+            Masuk ke Pusat Komando
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+})
+
+// Rute Dashboard Admin (UI)
+app.get('/', async (c) => {
+  const db = createDb(c.env.DB)
+  
+  // Ambil daftar klien/tenant
+  const { results: tenantsList } = await c.env.DB.prepare("SELECT * FROM tenants ORDER BY created_at DESC").all()
+  
+  // Ambil daftar transaksi
+  const { results: txList } = await c.env.DB.prepare("SELECT transactions.*, tenants.name as tenant_name FROM transactions JOIN tenants ON transactions.tenant_id = tenants.id ORDER BY transactions.created_at DESC").all()
+
   return c.render(
     <div class="min-h-screen relative overflow-hidden flex flex-col">
       {/* Background Ornaments */}
-      <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[600px] opacity-30 pointer-events-none">
+      <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[600px] opacity-20 pointer-events-none">
         <div class="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-brand-600 blur-[120px] mix-blend-screen"></div>
         <div class="absolute top-[20%] right-[-10%] w-[400px] h-[400px] rounded-full bg-indigo-600 blur-[120px] mix-blend-screen"></div>
       </div>
       <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] pointer-events-none"></div>
 
       {/* Navbar */}
-      <nav class="w-full max-w-6xl mx-auto px-6 py-8 relative z-10 flex justify-between items-center">
+      <nav class="w-full max-w-6xl mx-auto px-6 py-6 relative z-10 flex justify-between items-center border-b border-slate-800/50">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-indigo-600 flex items-center justify-center shadow-lg">
             <span class="font-bold text-white text-xl">M</span>
@@ -95,151 +131,205 @@ app.get('/', (c) => {
           <span class="text-xl font-bold text-white tracking-tight">Nuansa<span class="text-slate-400 font-normal">Master</span></span>
         </div>
         <div class="hidden md:flex gap-8 text-sm font-medium text-slate-400">
-          <a href="#" class="hover:text-white transition">Fitur</a>
-          <a href="#" class="hover:text-white transition">Harga</a>
-          <a href="#" class="hover:text-white transition">Dokumentasi</a>
+          <span class="text-brand-400 font-semibold">Dashboard</span>
+          <a href="#" class="hover:text-white transition">Pengaturan</a>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <main class="flex-grow w-full max-w-6xl mx-auto px-6 py-12 md:py-20 relative z-10 grid md:grid-cols-2 gap-16 items-center">
-        
-        {/* Left Copy */}
-        <div>
-          <div class="inline-block border border-brand-500/30 bg-brand-500/10 text-brand-400 text-xs font-bold px-3 py-1 rounded-full mb-6 tracking-wide uppercase">
-            Pusat Komando B2B
+      {/* Main Content */}
+      <main class="flex-grow w-full max-w-6xl mx-auto px-6 py-10 relative z-10">
+        <div class="flex justify-between items-end mb-8">
+          <div>
+            <h1 class="text-3xl font-bold text-white mb-2">Daftar Klien (Tenants)</h1>
+            <p class="text-slate-400">Kelola dan pantau seluruh ruang kerja klien yang terdaftar di platform Anda.</p>
           </div>
-          <h1 class="text-5xl md:text-6xl font-extrabold text-white leading-[1.1] tracking-tight mb-6">
-            Bangun <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-400">Kerajaan CMS</span> Anda Sendiri.
-          </h1>
-          <p class="text-lg text-slate-400 mb-10 leading-relaxed max-w-md">
-            Kelola ribuan klien, distribusikan tema secara instan, dan pantau metrik analitik dari satu dasbor edge-native super cepat.
-          </p>
-          
-          <div class="flex gap-6">
-            <div class="flex flex-col">
-              <span class="text-3xl font-bold text-white mb-1">0ms</span>
-              <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Cold Start</span>
-            </div>
-            <div class="w-px h-12 bg-slate-800"></div>
-            <div class="flex flex-col">
-              <span class="text-3xl font-bold text-white mb-1">∞</span>
-              <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Skalabilitas</span>
-            </div>
-            <div class="w-px h-12 bg-slate-800"></div>
-            <div class="flex flex-col">
-              <span class="text-3xl font-bold text-white mb-1">D1</span>
-              <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Database</span>
-            </div>
+          <div class="bg-dark-800/50 border border-slate-700/50 px-4 py-2 rounded-lg text-sm font-medium text-slate-300">
+            Total: <span class="text-brand-400 font-bold ml-1">{tenantsList.length}</span>
           </div>
         </div>
 
-        {/* Right Form (Registration) */}
-        <div class="glass p-8 md:p-10 rounded-3xl shadow-2xl relative">
-          <div class="absolute -inset-0.5 bg-gradient-to-br from-brand-500/30 to-indigo-500/30 rounded-3xl blur opacity-50 pointer-events-none"></div>
-          <div class="relative">
-            <h3 class="text-2xl font-bold text-white mb-2">Registrasi Klien Baru</h3>
-            <p class="text-sm text-slate-400 mb-8">Buat ruang kerja (Tenant) instan untuk klien Anda.</p>
-            
-            <form method="POST" action="/api/tenants" class="space-y-5">
-              <div>
-                <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Nama Perusahaan (Tenant)</label>
-                <input 
-                  type="text" 
-                  name="name" 
-                  placeholder="Misal: PT Maju Bersama" 
-                  required
-                  class="w-full bg-dark-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition"
-                />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Email Administrator Utama</label>
-                <input 
-                  type="email" 
-                  name="email" 
-                  placeholder="admin@majubersama.com" 
-                  required
-                  class="w-full bg-dark-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition"
-                />
-              </div>
-              <button 
-                type="submit" 
-                class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3.5 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(2,132,199,0.3)] hover:shadow-[0_0_25px_rgba(2,132,199,0.5)] mt-4"
-              >
-                Buat Tenant Sekarang
-              </button>
-            </form>
+        <div class="glass rounded-2xl overflow-hidden shadow-2xl border border-slate-700/50">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-dark-800/80 border-b border-slate-700/50">
+                  <th class="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Nama Perusahaan</th>
+                  <th class="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Tenant ID</th>
+                  <th class="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Paket (Plan)</th>
+                  <th class="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Tanggal Daftar</th>
+                  <th class="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/50">
+                {tenantsList.map((tenant: any) => {
+                  const date = new Date(tenant.created_at).toLocaleDateString('id-ID', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                  })
+                  
+                  return (
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                      <td class="px-6 py-5">
+                        <div class="font-semibold text-white">{tenant.name}</div>
+                      </td>
+                      <td class="px-6 py-5">
+                        <code class="text-xs text-brand-400 bg-brand-500/10 px-2 py-1 rounded border border-brand-500/20">
+                          {tenant.id.split('-')[0]}...
+                        </code>
+                      </td>
+                      <td class="px-6 py-5">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wide">
+                          {tenant.plan}
+                        </span>
+                      </td>
+                      <td class="px-6 py-5 text-sm text-slate-400">
+                        {date}
+                      </td>
+                      <td class="px-6 py-5 text-right">
+                        <button class="text-sm font-medium text-slate-400 hover:text-white transition bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 px-3 py-1.5 rounded-lg">
+                          Kelola
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
+                
+                {tenantsList.length === 0 && (
+                  <tr>
+                    <td colSpan={5} class="px-6 py-12 text-center text-slate-500">
+                      Belum ada klien yang terdaftar. Klien dapat mendaftar melalui aplikasi Studio.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Tabel Transaksi & Persetujuan */}
+        <div class="mt-12 flex justify-between items-end mb-8">
+          <div>
+            <h2 class="text-2xl font-bold text-white mb-2">Persetujuan Layanan (Approval)</h2>
+            <p class="text-slate-400">Persetujuan otomatis atau manual untuk pembelian lisensi dan upgrade paket.</p>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl overflow-hidden shadow-2xl border border-slate-700/50">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-dark-800/80 border-b border-slate-700/50">
+                  <th class="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Klien</th>
+                  <th class="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Jenis / Item</th>
+                  <th class="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Waktu</th>
+                  <th class="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/50">
+                {txList.map((tx: any) => {
+                  const date = new Date(tx.created_at).toLocaleString('id-ID')
+                  let parsedDetails = { target_plan: '' }
+                  try { if(tx.details) parsedDetails = JSON.parse(tx.details) } catch(e) {}
+                  
+                  return (
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                      <td class="px-6 py-5">
+                        <div class="font-semibold text-white">{tx.tenant_name}</div>
+                        <div class="text-xs text-slate-500">ID: {tx.tenant_id.split('-')[0]}...</div>
+                      </td>
+                      <td class="px-6 py-5">
+                        <div class="text-sm text-brand-400 font-medium">{tx.type === 'plan_upgrade' ? 'Upgrade Paket' : tx.type}</div>
+                        <div class="text-xs text-slate-400">{parsedDetails.target_plan?.toUpperCase()}</div>
+                      </td>
+                      <td class="px-6 py-5">
+                        {tx.status === 'pending' && <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase">Menunggu</span>}
+                        {tx.status === 'approved' && <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">Disetujui</span>}
+                        {tx.status === 'rejected' && <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20 uppercase">Ditolak</span>}
+                      </td>
+                      <td class="px-6 py-5 text-sm text-slate-400">
+                        {date}
+                      </td>
+                      <td class="px-6 py-5 text-right flex justify-end gap-2">
+                        {tx.status === 'pending' ? (
+                          <form method="POST" action="/api/approve">
+                            <input type="hidden" name="tx_id" value={tx.id} />
+                            <input type="hidden" name="tenant_id" value={tx.tenant_id} />
+                            <input type="hidden" name="target_plan" value={parsedDetails.target_plan} />
+                            <button type="submit" class="text-sm font-semibold text-emerald-400 hover:text-white transition bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/50 px-3 py-1.5 rounded-lg shadow-lg shadow-emerald-500/20">
+                              Approve
+                            </button>
+                          </form>
+                        ) : (
+                          <span class="text-xs text-slate-600 italic">Selesai</span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+                
+                {txList.length === 0 && (
+                  <tr>
+                    <td colSpan={5} class="px-6 py-12 text-center text-slate-500">
+                      Belum ada permintaan transaksi dari klien.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </main>
       
       {/* Footer */}
-      <footer class="w-full max-w-6xl mx-auto px-6 py-8 text-center text-slate-600 text-sm mt-auto relative z-10">
+      <footer class="w-full max-w-6xl mx-auto px-6 py-6 text-center text-slate-600 text-sm mt-auto relative z-10 border-t border-slate-800/50">
         &copy; 2026 Nuansa Omni-Platform. Ditenagai oleh Cloudflare Workers & D1.
       </footer>
     </div>
   )
 })
 
-// Endpoint untuk mendaftarkan Tenant Baru (API)
-app.post('/api/tenants', async (c) => {
+export default app
+
+app.post('/api/approve', async (c) => {
   try {
     const db = createDb(c.env.DB)
+    const body = await c.req.parseBody()
+    const tx_id = body['tx_id'] as string
+    const tenant_id = body['tenant_id'] as string
+    const target_plan = body['target_plan'] as string
+
+    if (!tx_id || !tenant_id) return c.text('Bad Request', 400)
+
+    // Update status transaksi
+    await c.env.DB.prepare("UPDATE transactions SET status = 'approved', updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(tx_id).run()
     
-    // Mendukung baik pengiriman formulir UI (FormData) maupun JSON (API)
-    const contentType = c.req.header('content-type') || ''
-    let name = ''
-    let email = ''
-    
-    if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
-      const formData = await c.req.parseBody()
-      name = formData['name'] as string
-      email = formData['email'] as string
-    } else {
-      const body = await c.req.json()
-      name = body.name
-      email = body.email
+    // Update plan tenant
+    if (target_plan) {
+      await c.env.DB.prepare("UPDATE tenants SET plan = ? WHERE id = ?").bind(target_plan, tenant_id).run()
     }
 
-    if (!name || !email) {
-      return c.text('Name and Email are required', 400)
-    }
-
-    const tenantId = crypto.randomUUID()
-    const userId = crypto.randomUUID()
-    const now = new Date()
-
-    await db.batch([
-      db.insert(tenants).values({
-        id: tenantId,
-        name: name,
-        plan: 'gratis',
-        createdAt: now,
-      }),
-      db.insert(users).values({
-        id: userId,
-        tenantId: tenantId,
-        email: email,
-        role: 'admin',
-        createdAt: now,
-      })
-    ])
-
-    // Jika dikirim dari UI Form, arahkan ke halaman sukses, jika dari API, kembalikan JSON
-    if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
-      return c.render(<SuccessPage tenantId={tenantId} />)
-    }
-
-    return c.json({
-      success: true,
-      message: 'Tenant successfully registered',
-      tenantId: tenantId,
-      userId: userId
-    }, 201)
-  } catch (error: any) {
-    console.error('Registration error:', error)
-    return c.text(`Internal Server Error: ${error.message}`, 500)
+    return c.redirect('/')
+  } catch (e) {
+    console.error(e)
+    return c.text('Internal Server Error', 500)
   }
 })
 
-export default app
+app.post('/api/login', async (c) => {
+  const body = await c.req.parseBody()
+  const pin = body['pin'] as string
+
+  // PIN Prototype 123456
+  if (pin === '123456') {
+    setCookie(c, 'master_auth', 'authenticated', {
+      path: '/',
+      secure: true,
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 // 24 jam
+    })
+    return c.redirect('/')
+  }
+
+  // Jika gagal, redirect kembali ke login
+  return c.redirect('/login')
+})

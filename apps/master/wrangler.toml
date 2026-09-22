@@ -1,8 +1,13 @@
 name = "nuansa-master"
 main = "src/index.tsx"
 compatibility_date = "2024-03-20"
+account_id = "ecd009a3d2a4392730f427e7a94ec32f"
+
+routes = [
+  { pattern = "master.nuansa.net", custom_domain = true }
+]
 
 [[d1_databases]]
 binding = "DB"
 database_name = "nuansa-master-db"
-database_id = "c9deb1a8-67e5-4d95-9e0a-7aecdd55d4e8"
+database_id = "cff9dfe9-92ed-47cd-a73f-1571535d3a00"

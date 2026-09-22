@@ -1,15 +1,25 @@
 DROP TABLE IF EXISTS posts;
 
 CREATE TABLE posts (
-    id TEXT PRIMARY KEY,
-    title TEXT NOT NULL,
-    slug TEXT NOT NULL UNIQUE,
-    content TEXT,
-    status TEXT DEFAULT 'draft',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  content TEXT,
+  metadata TEXT,
+  status TEXT DEFAULT 'draft',
+  created_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS redirects (
+    id TEXT PRIMARY KEY,
+    source_url TEXT NOT NULL,
+    target_url TEXT NOT NULL,
+    status_code INTEGER DEFAULT 301,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
