@@ -348,13 +348,22 @@ app.get('/dashboard', async (c) => {
     const postCount = (postCountResult[0] as any)?.count || 0
     const { results: recentPosts } = await c.env.DB.prepare("SELECT title, created_at FROM posts ORDER BY created_at DESC LIMIT 3").all()
 
-    const list = await c.env.VAULT_BUCKET.list()
     let totalBytes = 0
-    list.objects.forEach(obj => totalBytes += obj.size)
+    let totalViews = 0
+    try {
+      const { results: mediaResults } = await c.env.DB.prepare("SELECT SUM(size) as total FROM media").all()
+      totalBytes = (mediaResults[0] as any)?.total || 0
+      
+      const { results: viewResults } = await c.env.DB.prepare("SELECT SUM(views) as total FROM analytics").all()
+      totalViews = (viewResults[0] as any)?.total || 0
+    } catch (e) {
+      // ignore if tables not ready
+    }
+    
     const mediaMB = (totalBytes / 1024 / 1024).toFixed(2)
 
     const stats = {
-      visitors: 'Tersedia Segera',
+      visitors: totalViews.toString(),
       posts: postCount.toString(),
       media: `${mediaMB} MB`
     }
@@ -387,8 +396,13 @@ app.get('/appearance', async (c) => {
 })
 
 app.get('/vault', async (c) => {
-  const list = await c.env.VAULT_BUCKET.list()
-  return c.html(<Vault currentPath={c.req.path} files={list.objects} />)
+  try {
+    const { results } = await c.env.DB.prepare("SELECT * FROM media ORDER BY created_at DESC").all()
+    return c.html(<Vault currentPath={c.req.path} files={results as any[]} />)
+  } catch (e) {
+    console.error('Failed to load media from DB:', e)
+    return c.html(<Vault currentPath={c.req.path} files={[]} />)
+  }
 })
 
 app.get('/tools', async (c) => {
@@ -481,17 +495,34 @@ app.post('/api/upload', async (c) => {
   if (!file || !file.size) return c.text('Tidak ada file', 400)
 
   const key = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`
+  const hasWatermark = body['has_watermark'] === '1' ? 1 : 0
+  
   await c.env.VAULT_BUCKET.put(key, await file.arrayBuffer(), {
     httpMetadata: { contentType: file.type }
   })
+  
+  try {
+    await c.env.DB.prepare(
+      "INSERT INTO media (id, filename, url, type, size, has_watermark) VALUES (?, ?, ?, ?, ?, ?)"
+    ).bind(crypto.randomUUID(), file.name, `/media/${key}`, file.type, file.size, hasWatermark).run()
+  } catch(e) {
+    console.error('Failed to save media metadata:', e)
+  }
+
   return c.redirect('/vault')
 })
 
 app.post('/api/vault/delete', async (c) => {
   const body = await c.req.parseBody()
-  const key = body['key'] as string
-  if (key) {
+  const id = body['id'] as string
+  const url = body['url'] as string
+  
+  if (url) {
+    const key = url.replace('/media/', '')
     await c.env.VAULT_BUCKET.delete(key)
+  }
+  if (id) {
+    await c.env.DB.prepare("DELETE FROM media WHERE id = ?").bind(id).run()
   }
   return c.redirect('/vault')
 })

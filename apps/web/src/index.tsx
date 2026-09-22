@@ -130,6 +130,30 @@ const Layout: FC<{ title: string, siteName: string, primaryColor: string, adsens
   )
 }
 
+// Middleware Interceptor untuk Analytics & Redirects
+app.use('*', async (c, next) => {
+  const path = c.req.path
+  
+  if (!path.startsWith('/api/') && !path.includes('.')) {
+    // 1. Cek Redirect
+    try {
+      const redirectRow: any = await c.env.DB.prepare("SELECT * FROM redirects WHERE source_url = ?").bind(path).first()
+      if (redirectRow) {
+        return c.redirect(redirectRow.target_url, redirectRow.status_code || 301)
+      }
+    } catch(e) {}
+
+    // 2. Catat Analytics
+    try {
+      await c.env.DB.prepare(
+        "INSERT INTO analytics (id, path, views, last_visited_at) VALUES (?, ?, 1, CURRENT_TIMESTAMP) ON CONFLICT(path) DO UPDATE SET views = views + 1, last_visited_at = CURRENT_TIMESTAMP"
+      ).bind(crypto.randomUUID(), path).run()
+    } catch(e) {}
+  }
+
+  await next()
+})
+
 // Rute Halaman Utama (Daftar Artikel)
 app.get('/', async (c) => {
   // Mengambil Pengaturan Tema (Nuansa Architect)

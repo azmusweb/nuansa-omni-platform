@@ -1,14 +1,17 @@
 import type { FC } from 'hono/jsx'
 import { Layout } from '../components/Layout'
 
-// R2Object type minimal untuk TypeScript
-type R2Object = {
-  key: string;
+type MediaObject = {
+  id: string;
+  filename: string;
+  url: string;
+  type: string;
   size: number;
-  uploaded: Date;
+  has_watermark: number;
+  created_at: string | Date;
 }
 
-export const Vault: FC<{ currentPath: string, files?: R2Object[] }> = ({ currentPath, files = [] }) => {
+export const Vault: FC<{ currentPath: string, files?: MediaObject[] }> = ({ currentPath, files = [] }) => {
   return (
     <Layout title="Pustaka Media (R2 Vault)" currentPath={currentPath}>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -70,20 +73,27 @@ export const Vault: FC<{ currentPath: string, files?: R2Object[] }> = ({ current
               <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {files.map((file) => (
                   <div class="aspect-square bg-dark-900 rounded-xl border border-slate-700/50 overflow-hidden group relative flex items-center justify-center">
-                    <img src={`/media/${file.key}`} alt={file.key} class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" loading="lazy" />
+                    <img src={file.url} alt={file.filename} class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" loading="lazy" />
                     
+                    {file.has_watermark === 1 && (
+                      <div class="absolute top-2 right-2 bg-brand-500/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+                        Watermarked
+                      </div>
+                    )}
+
                     <div class="absolute inset-0 bg-dark-900/95 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-3 text-center gap-2">
-                      <p class="text-white text-xs truncate w-full font-medium" title={file.key}>{file.key}</p>
+                      <p class="text-white text-xs truncate w-full font-medium" title={file.filename}>{file.filename}</p>
                       <p class="text-brand-400 font-mono text-[10px] mb-2">{(file.size / 1024).toFixed(1)} KB</p>
                       <div class="flex flex-wrap gap-1.5 justify-center">
-                        <a href={`/media/${file.key}`} target="_blank" class="bg-slate-700 text-white text-xs px-2.5 py-1 rounded hover:bg-slate-600 transition">
+                        <a href={file.url} target="_blank" class="bg-slate-700 text-white text-xs px-2.5 py-1 rounded hover:bg-slate-600 transition">
                           Buka
                         </a>
-                        <button onclick={`navigator.clipboard.writeText(window.location.origin + '/media/${file.key}'); alert('Tautan disalin!')`} class="bg-brand-600/20 text-brand-400 border border-brand-500/30 text-xs px-2.5 py-1 rounded hover:bg-brand-600/30 transition">
+                        <button onclick={`navigator.clipboard.writeText(window.location.origin + '${file.url}'); alert('Tautan disalin!')`} class="bg-brand-600/20 text-brand-400 border border-brand-500/30 text-xs px-2.5 py-1 rounded hover:bg-brand-600/30 transition">
                           Salin
                         </button>
                         <form action="/api/vault/delete" method="POST" onsubmit="return confirm('Hapus media ini secara permanen?')">
-                          <input type="hidden" name="key" value={file.key} />
+                          <input type="hidden" name="id" value={file.id} />
+                          <input type="hidden" name="url" value={file.url} />
                           <button type="submit" class="bg-red-500/10 text-red-400 border border-red-500/20 text-xs px-2.5 py-1 rounded hover:bg-red-500/20 transition">
                             Hapus
                           </button>

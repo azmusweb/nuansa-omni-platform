@@ -63,3 +63,20 @@ export const transactions = sqliteTable('transactions', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }),
 });
+
+export const media = sqliteTable('media', {
+  id: text('id').primaryKey(),
+  filename: text('filename').notNull(),
+  url: text('url').notNull(),
+  type: text('type').notNull(), // 'image/png', 'image/jpeg', etc.
+  size: integer('size').notNull(),
+  hasWatermark: integer('has_watermark', { mode: 'boolean' }).default(false),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
+});
+
+export const analytics = sqliteTable('analytics', {
+  id: text('id').primaryKey(),
+  path: text('path').notNull().unique(),
+  views: integer('views').notNull().default(1),
+  lastVisitedAt: integer('last_visited_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
+});
