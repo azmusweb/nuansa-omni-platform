@@ -33,3 +33,8 @@ CREATE TABLE IF NOT EXISTS transactions (
   updated_at DATETIME,
   FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
+
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);

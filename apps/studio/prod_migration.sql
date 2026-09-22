@@ -1,0 +1,11 @@
+ALTER TABLE posts ADD COLUMN metadata TEXT;
+
+CREATE TABLE IF NOT EXISTS products (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  price INTEGER NOT NULL DEFAULT 0,
+  stock INTEGER,
+  image_url TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

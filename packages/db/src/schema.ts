@@ -21,10 +21,20 @@ export const posts = sqliteTable('posts', {
   title: text('title').notNull(),
   slug: text('slug').notNull().unique(),
   content: text('content'),
-  metadata: text('metadata'), // JSON string
-  status: text('status', { enum: ['draft', 'published'] }).default('draft'),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  metadata: text('metadata'),
+  status: text('status').default('draft'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
+});
+
+export const products = sqliteTable('products', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  price: integer('price').notNull(),
+  description: text('description'),
+  stock: integer('stock').default(0),
+  imageUrl: text('image_url'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
 });
 
 export const domains = sqliteTable('domains', {
