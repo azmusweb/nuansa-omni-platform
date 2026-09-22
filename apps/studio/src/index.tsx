@@ -10,6 +10,7 @@ import { Billing } from './pages/Billing'
 import { Tools } from './pages/Tools'
 import { Audit } from './pages/Audit'
 import { Products } from './pages/Products'
+import { Orders } from './pages/Orders'
 import { createDb, tenants, users, transactions, products } from '@nuansa/db'
 import { desc } from 'drizzle-orm'
 import type { FC } from 'hono/jsx'
@@ -446,6 +447,31 @@ app.post('/api/products', async (c) => {
   }
 })
 
+app.get('/orders', async (c) => {
+  try {
+    const { results } = await c.env.DB.prepare("SELECT * FROM orders ORDER BY created_at DESC").all()
+    return c.html(<Orders currentPath={c.req.path} orders={results as any[]} />)
+  } catch (e) {
+    console.error(e)
+    return c.html(<Orders currentPath={c.req.path} orders={[]} />)
+  }
+})
+
+app.post('/api/orders/update', async (c) => {
+  try {
+    const body = await c.req.parseBody()
+    const id = body['id'] as string
+    const status = body['status'] as string
+    
+    if (id && status) {
+      await c.env.DB.prepare("UPDATE orders SET status = ? WHERE id = ?").bind(status, id).run()
+    }
+    return c.redirect('/orders')
+  } catch (e) {
+    return c.text('Error', 500)
+  }
+})
+
 app.get('/settings', async (c) => {
   try {
     const { results } = await c.env.DB.prepare("SELECT * FROM settings").all()
@@ -550,6 +576,8 @@ app.post('/api/posts', async (c) => {
   const content = body['content'] as string
   const metadata = body['metadata'] as string // JSON string dari Nuansa Fields
   const status = body['status'] as string || 'draft'
+  const is_premium = body['is_premium'] === '1' ? 1 : 0
+  const price = parseInt(body['price'] as string) || 0
   const action = body['action'] as string // 'delete' or 'save'
   
   if (action === 'delete' && id) {
@@ -561,14 +589,14 @@ app.post('/api/posts', async (c) => {
 
   if (id) {
     await c.env.DB.prepare(
-      "UPDATE posts SET title = ?, content = ?, metadata = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
-    ).bind(title, content, metadata || null, status, id).run()
+      "UPDATE posts SET title = ?, content = ?, metadata = ?, status = ?, is_premium = ?, price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+    ).bind(title, content, metadata || null, status, is_premium, price, id).run()
   } else {
     const newId = crypto.randomUUID()
     const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4)
     await c.env.DB.prepare(
-      "INSERT INTO posts (id, title, slug, content, metadata, status) VALUES (?, ?, ?, ?, ?, ?)"
-    ).bind(newId, title, slug, content || '', metadata || null, status).run()
+      "INSERT INTO posts (id, title, slug, content, metadata, status, is_premium, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    ).bind(newId, title, slug, content || '', metadata || null, status, is_premium, price).run()
   }
   
   return c.redirect('/posts')

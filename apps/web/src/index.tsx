@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import type { FC } from 'hono/jsx'
+import { getCookie, setCookie } from 'hono/cookie'
 
 type Bindings = {
   DB: D1Database
@@ -229,7 +230,7 @@ app.get('/', async (c) => {
   )
 })
 
-// Rute Membaca Artikel
+// Rute Membaca Artikel (dengan Content Locker)
 app.get('/read/:slug', async (c) => {
   const slug = c.req.param('slug')
   
@@ -262,6 +263,28 @@ app.get('/read/:slug', async (c) => {
     )
   }
 
+  // Cek apakah artikel premium
+  const isPremium = !!post.is_premium
+  
+  // Jika premium, cek cookie token akses
+  const accessToken = getCookie(c, `access_${post.id}`)
+  const hasAccess = !isPremium || (accessToken === `granted_${post.id}`)
+
+  // Potong konten jika premium & belum punya akses (30% pertama)
+  let displayContent = post.content || ''
+  if (isPremium && !hasAccess) {
+    try {
+      const parsed = JSON.parse(displayContent)
+      if (parsed.blocks && parsed.blocks.length > 0) {
+        const cutoff = Math.max(1, Math.ceil(parsed.blocks.length * 0.3))
+        parsed.blocks = parsed.blocks.slice(0, cutoff)
+        displayContent = JSON.stringify(parsed)
+      }
+    } catch(e) {}
+  }
+
+  const price = post.price || 0
+
   return c.html(
     <Layout title={`${post.title} - ${siteName}`} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId}>
       <article class="max-w-3xl mx-auto px-6 py-16">
@@ -270,43 +293,70 @@ app.get('/read/:slug', async (c) => {
         </a>
         
         <header class="mb-12">
+          {isPremium && (
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-semibold mb-4">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              KONTEN PREMIUM
+            </div>
+          )}
           <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white leading-tight mb-6">{post.title}</h1>
           <div class="flex items-center text-slate-500 dark:text-slate-400 text-sm font-medium">
             <span>Diterbitkan pada {new Date(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
           </div>
         </header>
 
-        <div class="prose prose-lg prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-theme relative max-h-[600px] overflow-hidden">
-          {/* Render konten */}
-          <div dangerouslySetInnerHTML={{__html: post.content}} />
+        <div class={`prose prose-lg prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-theme relative ${isPremium && !hasAccess ? 'max-h-[500px] overflow-hidden' : ''}`}>
+          <div dangerouslySetInnerHTML={{__html: displayContent}} />
           
-          {/* Nuansa Content Locker Overlay */}
-          <div class="absolute bottom-0 left-0 w-full h-96 bg-gradient-to-t from-slate-50 dark:from-slate-900 to-transparent flex items-end justify-center pb-8">
-            <div class="glassmorphism p-8 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-slate-200 dark:border-slate-700/50 text-center max-w-md mx-auto relative z-10 w-full">
-              <div class="w-16 h-16 bg-theme/10 text-theme rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-              </div>
-              <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Nuansa Content Locker</h3>
-              <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">Artikel ini dikunci khusus untuk pembaca premium. Silakan dukung penulis untuk membaca selengkapnya.</p>
-              <div class="space-y-3">
-                <button class="w-full bg-[#1DA1F2] hover:bg-[#1a91da] text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-[#1DA1F2]/20 flex items-center justify-center gap-2">
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                  Bagikan ke X
-                </button>
-                <button class="w-full bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-semibold py-3 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                  Beli Akses (Rp 2.000)
-                </button>
+          {/* Nuansa Content Locker Overlay - Hanya jika premium dan belum punya akses */}
+          {isPremium && !hasAccess && (
+            <div class="absolute bottom-0 left-0 w-full h-96 bg-gradient-to-t from-slate-50 dark:from-slate-900 to-transparent flex items-end justify-center pb-8">
+              <div class="glassmorphism p-8 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-slate-200 dark:border-slate-700/50 text-center max-w-md mx-auto relative z-10 w-full">
+                <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Artikel Premium</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mb-2">Anda membaca pratinjau singkat. Beli akses untuk membaca artikel lengkap ini.</p>
+                <p class="text-2xl font-extrabold text-theme mb-6">Rp {price.toLocaleString('id-ID')}</p>
+                <div class="space-y-3">
+                  <form action="/api/grant-access" method="POST">
+                    <input type="hidden" name="post_id" value={post.id} />
+                    <input type="hidden" name="slug" value={post.slug} />
+                    <button type="submit" class="w-full bg-theme hover:opacity-90 text-white font-semibold py-3 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+                      Beli Akses &rarr; Rp {price.toLocaleString('id-ID')}
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </article>
     </Layout>
   )
 })
 
-// Rute Katalog Produk (Nuansa Commerce)
+// Endpoint untuk memberikan akses token artikel premium (simulasi pembayaran)
+app.post('/api/grant-access', async (c) => {
+  const body = await c.req.parseBody()
+  const postId = body['post_id'] as string
+  const slug = body['slug'] as string
+  
+  if (!postId || !slug) return c.redirect('/')
+  
+  // Set cookie token akses (expired 7 hari)
+  setCookie(c, `access_${postId}`, `granted_${postId}`, {
+    maxAge: 60 * 60 * 24 * 7,
+    path: '/',
+    httpOnly: true,
+    sameSite: 'Lax',
+  })
+  
+  return c.redirect(`/read/${slug}`)
+})
+
+
 app.get('/katalog', async (c) => {
   const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings").all()
   const settings = rawSettings.reduce((acc: any, curr: any) => { acc[curr.key] = curr.value; return acc }, {})
@@ -347,7 +397,7 @@ app.get('/katalog', async (c) => {
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((p: any) => {
               const waText = encodeURIComponent(`Halo ${siteName}, saya tertarik untuk memesan produk:\n\n*${p.name}*\nHarga: Rp ${p.price.toLocaleString('id-ID')}\n\nApakah stok masih tersedia?`)
-              const waLink = `https://wa.me/6281234567890?text=${waText}` // Simulasi nomor WA
+              const waLink = `https://wa.me/6282313544664?text=${waText}`
 
               return (
                 <div class="glassmorphism rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl dark:hover:shadow-slate-900/50 transition-all flex flex-col hover:-translate-y-1">
@@ -389,6 +439,28 @@ app.get('/katalog', async (c) => {
       </div>
     </Layout>
   )
+})
+// Endpoint untuk mencatat pesanan sebelum redirect ke WhatsApp
+app.post('/api/order', async (c) => {
+  try {
+    const body = await c.req.parseBody()
+    const productId = body['product_id'] as string
+    const customerName = (body['customer_name'] as string) || 'Pelanggan'
+    const customerPhone = (body['customer_phone'] as string) || '082313544664'
+    const quantity = parseInt(body['quantity'] as string) || 1
+    const totalPrice = parseInt(body['total_price'] as string) || 0
+    const waUrl = body['wa_url'] as string
+
+    await c.env.DB.prepare(
+      "INSERT INTO orders (id, product_id, customer_name, customer_phone, quantity, total_price, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')"
+    ).bind(crypto.randomUUID(), productId, customerName, customerPhone, quantity, totalPrice).run()
+
+    // Redirect ke WhatsApp
+    if (waUrl) return c.redirect(waUrl)
+    return c.redirect('/katalog')
+  } catch (e) {
+    return c.redirect('/katalog')
+  }
 })
 
 export default app

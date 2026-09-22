@@ -22,7 +22,9 @@ export const posts = sqliteTable('posts', {
   slug: text('slug').notNull().unique(),
   content: text('content'),
   metadata: text('metadata'),
-  status: text('status').default('draft'),
+  status: text('status').notNull().default('draft'),
+  isPremium: integer('is_premium', { mode: 'boolean' }).default(false),
+  price: integer('price').default(0),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
 });
@@ -79,4 +81,15 @@ export const analytics = sqliteTable('analytics', {
   path: text('path').notNull().unique(),
   views: integer('views').notNull().default(1),
   lastVisitedAt: integer('last_visited_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
+});
+
+export const orders = sqliteTable('orders', {
+  id: text('id').primaryKey(),
+  productId: text('product_id').notNull(), // can link to products.id but loose relation is fine for now
+  customerName: text('customer_name').notNull(),
+  customerPhone: text('customer_phone').notNull(),
+  quantity: integer('quantity').notNull().default(1),
+  totalPrice: integer('total_price').notNull().default(0),
+  status: text('status').notNull().default('pending'), // 'pending', 'processed', 'completed', 'cancelled'
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
 });

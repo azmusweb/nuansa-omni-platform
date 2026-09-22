@@ -8,6 +8,8 @@ type Post = {
   content: string
   metadata?: string
   status: string
+  is_premium?: boolean | number
+  price?: number
   created_at: string
 }
 
@@ -42,7 +44,7 @@ export const Posts: FC<{ currentPath: string, posts?: Post[] }> = ({ currentPath
               <tr class="border-b border-slate-700/50 text-slate-400 text-sm">
                 <th class="p-4 font-medium pl-6">Judul Artikel</th>
                 <th class="p-4 font-medium">Status</th>
-                <th class="p-4 font-medium">Slug</th>
+                <th class="p-4 font-medium">Tipe</th>
                 <th class="p-4 font-medium">Dibuat Pada</th>
                 <th class="p-4 font-medium text-right pr-6">Aksi</th>
               </tr>
@@ -59,11 +61,20 @@ export const Posts: FC<{ currentPath: string, posts?: Post[] }> = ({ currentPath
                       {post.status.toUpperCase()}
                     </span>
                   </td>
-                  <td class="p-4 text-slate-400 font-mono text-xs">/{post.slug}</td>
+                  <td class="p-4 font-medium text-xs">
+                    {post.is_premium ? (
+                      <span class="text-amber-400 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        Premium
+                      </span>
+                    ) : (
+                      <span class="text-slate-400">Gratis</span>
+                    )}
+                  </td>
                   <td class="p-4 text-slate-400">{new Date(post.created_at).toLocaleDateString('id-ID')}</td>
                   <td class="p-4 text-right pr-6">
                     <button 
-                      onclick={`openModal('${post.id}', '${post.title.replace(/'/g, "\\'")}', '${encodeURIComponent(post.content || '')}', '${encodeURIComponent((post as any).metadata || '')}', '${post.status}')`}
+                      onclick={`openModal('${post.id}', '${post.title.replace(/'/g, "\\'")}', '${encodeURIComponent(post.content || '')}', '${encodeURIComponent((post as any).metadata || '')}', '${post.status}', ${post.is_premium ? 1 : 0}, ${post.price || 0})`}
                       class="text-brand-400 hover:text-brand-300 font-medium text-sm transition mr-3">
                       Edit
                     </button>
@@ -145,6 +156,27 @@ export const Posts: FC<{ currentPath: string, posts?: Post[] }> = ({ currentPath
                   </div>
                 </div>
 
+                {/* Monetization: Content Locker */}
+                <div class="bg-dark-800/50 rounded-xl border border-slate-700/50 overflow-hidden">
+                  <div class="px-4 py-3 border-b border-slate-700/50 bg-dark-800 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <h4 class="text-slate-300 text-sm font-semibold">Content Locker</h4>
+                  </div>
+                  <div class="p-4 space-y-4">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                      <div class="relative">
+                        <input type="checkbox" id="post-is-premium" value="1" name="is_premium" class="sr-only peer" onchange="document.getElementById('price-container').classList.toggle('hidden', !this.checked)" />
+                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-500"></div>
+                      </div>
+                      <span class="text-sm font-medium text-slate-300">Jadikan Premium</span>
+                    </label>
+                    <div id="price-container" class="hidden">
+                      <label class="block text-slate-400 text-xs font-medium mb-1">Harga (Rp)</label>
+                      <input type="number" id="post-price" name="price" placeholder="5000" class="w-full bg-dark-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none transition" />
+                    </div>
+                  </div>
+                </div>
+
                 <div class="bg-dark-800/30 p-4 rounded-xl border border-slate-700/30">
                    <h4 class="text-slate-400 text-xs font-medium mb-2 flex items-center gap-2">
                      <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -218,11 +250,19 @@ export const Posts: FC<{ currentPath: string, posts?: Post[] }> = ({ currentPath
           });
         }
 
-        function openModal(id = '', title = '', encodedContent = '', encodedMetadata = '', status = 'draft') {
+        function openModal(id = '', title = '', encodedContent = '', encodedMetadata = '', status = 'draft', is_premium = 0, price = 0) {
           document.getElementById('modal-title').innerText = id ? 'Edit Artikel (Nodes)' : 'Tulis Artikel Baru';
           document.getElementById('post-id').value = id;
           document.getElementById('post-title').value = title;
           document.getElementById('post-status').value = status;
+          
+          const premiumCheckbox = document.getElementById('post-is-premium');
+          const priceContainer = document.getElementById('price-container');
+          const priceInput = document.getElementById('post-price');
+          
+          premiumCheckbox.checked = !!is_premium;
+          priceContainer.classList.toggle('hidden', !premiumCheckbox.checked);
+          priceInput.value = price || 0;
           
           initEditor(encodedContent, encodedMetadata);
           

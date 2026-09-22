@@ -1,14 +1,17 @@
 DROP TABLE IF EXISTS posts;
 
-CREATE TABLE posts (
-  id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
-  slug TEXT NOT NULL UNIQUE,
-  content TEXT,
-  metadata TEXT,
-  status TEXT DEFAULT 'draft',
-  created_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP
+
+CREATE TABLE IF NOT EXISTS posts (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    content TEXT,
+    metadata TEXT,
+    status TEXT DEFAULT 'draft',
+    is_premium INTEGER DEFAULT 0,
+    price INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS products (
@@ -49,4 +52,15 @@ CREATE TABLE IF NOT EXISTS analytics (
     path TEXT NOT NULL UNIQUE,
     views INTEGER NOT NULL DEFAULT 1,
     last_visited_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+    id TEXT PRIMARY KEY,
+    product_id TEXT NOT NULL,
+    customer_name TEXT NOT NULL,
+    customer_phone TEXT NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    total_price INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
