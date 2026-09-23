@@ -200,24 +200,40 @@ app.post('/api/login', async (c) => {
 // Rute Pendaftaran UI (Dengan Layout Sidebar Master)
 app.get('/register', (c) => {
   const isSuccess = c.req.query('success') === 'true'
+  const error = c.req.query('error')
+  const source = c.req.query('source')
 
   return c.render(
     <Layout currentPath="/register">
       <div class="max-w-2xl bg-white border border-[#c3c4c7] shadow-sm p-6">
         <h1 class="text-[23px] font-normal text-[#1d2327] mb-6">Deploy Tenant Node</h1>
         
+        {error === 'email_exists' && (
+          <div class="bg-[#fcf0f1] border-l-4 border-[#d63638] text-[#1d2327] p-4 text-[13px] shadow-sm mb-6">
+            <p class="font-semibold mb-1">Pendaftaran Gagal</p>
+            <p>Email sudah terdaftar. Silakan <a href="https://studio.nuansa.net/login" class="text-[#2271b1] underline">login di Studio</a> atau gunakan email lain.</p>
+          </div>
+        )}
+
         {isSuccess ? (
           <div class="space-y-6">
             <div class="bg-[#fff] border-l-4 border-[#00a32a] text-[#1d2327] p-4 text-[13px] shadow-sm">
               <p class="font-semibold mb-1">Berhasil!</p>
               <p>Node tenant baru telah dialokasikan dan siap digunakan.</p>
             </div>
-            <a href="https://studio.nuansa.net/login?registered=true" class="inline-block wp-blue-btn px-4 py-2 text-[13px] rounded transition-colors text-decoration-none">
-              Launch Studio
-            </a>
+            {source === 'admin' ? (
+              <a href="/clients" class="inline-block wp-blue-btn px-4 py-2 text-[13px] rounded transition-colors text-decoration-none">
+                Kembali ke Kelola Klien
+              </a>
+            ) : (
+              <a href="https://studio.nuansa.net/login?registered=true" class="inline-block wp-blue-btn px-4 py-2 text-[13px] rounded transition-colors text-decoration-none">
+                Launch Studio
+              </a>
+            )}
           </div>
         ) : (
           <form action="/api/register" method="POST" class="space-y-5">
+            {source && <input type="hidden" name="source" value={source} />}
             <div>
               <label class="block text-[14px] font-semibold text-[#1d2327] mb-2">Nama Perusahaan</label>
               <input 
@@ -272,6 +288,13 @@ app.post('/api/register', async (c) => {
     const plan = body['plan'] as string
     const email = (body['email'] as string).toLowerCase()
     const password = body['password'] as string
+    const source = body['source'] as string
+    
+    // Cek apakah email sudah terdaftar
+    const existingUser = await c.env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first()
+    if (existingUser) {
+      return c.redirect(`/register?error=email_exists${source ? '&source=' + source : ''}`)
+    }
     
     const tenantId = crypto.randomUUID()
     const userId = crypto.randomUUID()
@@ -289,6 +312,10 @@ app.post('/api/register', async (c) => {
     await c.env.DB.prepare(
       "INSERT INTO users (id, tenant_id, email, password, role, created_at) VALUES (?, ?, ?, ?, 'admin', ?)"
     ).bind(userId, tenantId, email, hashedPassword, Date.now()).run()
+
+    if (source === 'admin') {
+      return c.redirect('/clients?success=true')
+    }
 
     // Redirect langsung ke halaman login studio dengan indikator registered
     return c.redirect('https://studio.nuansa.net/login?registered=true')
@@ -346,15 +373,23 @@ app.get('/', async (c) => {
 // Halaman Klien / Tenants
 app.get('/clients', async (c) => {
   const { results: tenantsList } = await c.env.DB.prepare("SELECT * FROM tenants ORDER BY created_at DESC").all()
+  const isSuccess = c.req.query('success') === 'true'
 
   return c.render(
     <Layout currentPath="/clients">
       <div class="mb-6 flex justify-between items-center">
         <h1 class="text-[23px] font-normal text-[#1d2327]">Klien (Tenants)</h1>
-        <a href="/register" class="border border-[#2271b1] text-[#2271b1] hover:bg-[#f6f7f7] px-3 py-1 text-[13px] rounded transition-colors text-decoration-none">
+        <a href="/register?source=admin" class="border border-[#2271b1] text-[#2271b1] hover:bg-[#f6f7f7] px-3 py-1 text-[13px] rounded transition-colors text-decoration-none">
           Add New
         </a>
       </div>
+
+      {isSuccess && (
+        <div class="bg-[#fff] border-l-4 border-[#00a32a] text-[#1d2327] p-4 text-[13px] shadow-sm mb-6">
+          <p class="font-semibold mb-1">Berhasil!</p>
+          <p>Akun klien berhasil ditambahkan.</p>
+        </div>
+      )}
 
       <div class="bg-white border border-[#c3c4c7] shadow-sm overflow-hidden text-[13px]">
         <table class="w-full text-left border-collapse">
@@ -402,15 +437,21 @@ app.get('/clients', async (c) => {
                     {expiryDate}
                   </td>
                   <td class="px-4 py-3">
-                    <form method="POST" action="/api/tenants/update" class="flex gap-2 items-center">
-                      <input type="hidden" name="tenant_id" value={tenant.id} />
-                      <select name="status" class="wp-input px-2 py-1 text-[12px] rounded-sm">
-                        <option value="active" selected={tenant.status !== 'suspended'}>Active</option>
-                        <option value="suspended" selected={tenant.status === 'suspended'}>Suspend</option>
-                      </select>
-                      <input type="date" name="expires_at" defaultValue={tenant.expires_at ? new Date(tenant.expires_at).toISOString().split('T')[0] : ''} class="wp-input px-2 py-1 text-[12px] rounded-sm w-32" />
-                      <button type="submit" class="wp-blue-btn px-2 py-1 text-[12px] rounded">Simpan</button>
-                    </form>
+                    <div class="flex gap-2">
+                      <form method="POST" action="/api/tenants/update" class="flex gap-2 items-center">
+                        <input type="hidden" name="tenant_id" value={tenant.id} />
+                        <select name="status" class="wp-input px-2 py-1 text-[12px] rounded-sm">
+                          <option value="active" selected={tenant.status !== 'suspended'}>Active</option>
+                          <option value="suspended" selected={tenant.status === 'suspended'}>Suspend</option>
+                        </select>
+                        <input type="date" name="expires_at" defaultValue={tenant.expires_at ? new Date(tenant.expires_at).toISOString().split('T')[0] : ''} class="wp-input px-2 py-1 text-[12px] rounded-sm w-32" />
+                        <button type="submit" class="wp-blue-btn px-2 py-1 text-[12px] rounded">Simpan</button>
+                      </form>
+                      <form method="POST" action="/api/tenants/delete" class="flex items-center" onSubmit="return confirm('Apakah Anda yakin ingin menghapus akun ini secara permanen? Semua data terkait akan terhapus.');">
+                        <input type="hidden" name="tenant_id" value={tenant.id} />
+                        <button type="submit" class="border border-[#d63638] text-[#d63638] hover:bg-[#fcf0f1] px-2 py-1 text-[12px] rounded transition-colors">Hapus</button>
+                      </form>
+                    </div>
                   </td>
                 </tr>
               )
@@ -446,6 +487,25 @@ app.post('/api/tenants/update', async (c) => {
       await c.env.DB.prepare(
         "UPDATE tenants SET status = ?, expires_at = ? WHERE id = ?"
       ).bind(status, expiresAt, tenantId).run()
+    }
+    
+    return c.redirect('/clients')
+  } catch (e) {
+    console.error(e)
+    return c.text('Internal Server Error', 500)
+  }
+})
+
+app.post('/api/tenants/delete', async (c) => {
+  try {
+    const body = await c.req.parseBody()
+    const tenantId = body['tenant_id'] as string
+    
+    if (tenantId) {
+      // Hapus seluruh data yang berelasi dengan tenant (users dan transaksi) sebelum menghapus tenant
+      await c.env.DB.prepare("DELETE FROM users WHERE tenant_id = ?").bind(tenantId).run()
+      await c.env.DB.prepare("DELETE FROM transactions WHERE tenant_id = ?").bind(tenantId).run()
+      await c.env.DB.prepare("DELETE FROM tenants WHERE id = ?").bind(tenantId).run()
     }
     
     return c.redirect('/clients')
