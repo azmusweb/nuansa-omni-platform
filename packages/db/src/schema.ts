@@ -5,6 +5,8 @@ export const tenants = sqliteTable('tenants', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   plan: text('plan').notNull().default('gratis'), // gratis, pro, enterprise
+  status: text('status').notNull().default('active'), // active, suspended
+  expiresAt: integer('expires_at', { mode: 'timestamp' }), // nullable
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 });
 

@@ -60,7 +60,7 @@ app.get('/login', (c) => c.html(<Login />))
 
 app.post('/api/login', async (c) => {
   const body = await c.req.parseBody()
-  const email = body['email'] as string
+  const email = (body['email'] as string).toLowerCase()
   const password = body['password'] as string
 
   if (!email || !password) {
@@ -73,15 +73,23 @@ app.post('/api/login', async (c) => {
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   const hashedPassword = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
 
-  // Cari user di MASTER_DB
+  // Cari user di MASTER_DB dan cek status tenant
   const { results } = await c.env.MASTER_DB.prepare(
-    "SELECT id, tenant_id, role, password FROM users WHERE email = ?"
+    "SELECT u.id, u.tenant_id, u.role, u.password, t.status, t.expires_at FROM users u JOIN tenants t ON u.tenant_id = t.id WHERE u.email = ?"
   ).bind(email).all()
 
   const user = results[0] as any
 
   if (!user || user.password !== hashedPassword) {
     return c.html(<Login error="Email atau kata sandi salah" />)
+  }
+  
+  if (user.status === 'suspended') {
+    return c.html(<Login error="Akun klien ini telah ditangguhkan. Hubungi administrator." />)
+  }
+
+  if (user.expires_at && user.expires_at < Date.now()) {
+    return c.html(<Login error="Masa aktif akun klien ini telah habis. Hubungi administrator." />)
   }
 
   // Generate JWT
