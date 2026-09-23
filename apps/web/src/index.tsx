@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import type { FC } from 'hono/jsx'
 import { getCookie, setCookie } from 'hono/cookie'
+import { html } from 'hono/html'
 
 type Bindings = {
   DB: D1Database
@@ -101,11 +102,12 @@ const Layout: FC<{ title: string, siteName: string, primaryColor: string, adsens
               {siteName}
             </a>
             <div class="flex items-center gap-6">
-              <nav class="hidden md:flex gap-8 text-sm font-medium text-slate-600 dark:text-slate-400">
+              <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-slate-600 dark:text-slate-400">
                 <a href="/" class="hover:text-theme dark:hover:text-theme transition">Beranda</a>
                 <a href="/belajar" class="hover:text-theme dark:hover:text-theme transition">Belajar</a>
                 <a href="/katalog" class="hover:text-theme dark:hover:text-theme transition">Katalog Produk</a>
-                <a href="#" class="hover:text-theme dark:hover:text-theme transition">Tentang Kami</a>
+                <a href="/login" class="hover:text-theme dark:hover:text-theme transition ml-4">Login</a>
+                <a href="/register" class="bg-theme text-white hover:opacity-90 transition px-4 py-2 rounded-xl shadow-sm">Daftar</a>
               </nav>
               <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" title="Toggle Theme">
                 <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
@@ -131,6 +133,68 @@ const Layout: FC<{ title: string, siteName: string, primaryColor: string, adsens
     </html>
   )
 }
+
+const SuccessPage: FC<{ tenantId: string }> = ({ tenantId }) => (
+  <html lang="id">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Pendaftaran Berhasil - Nuansa Studio</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      {html`
+        <script>
+          tailwind.config = {
+            darkMode: 'class'
+          }
+        </script>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+          body { font-family: 'Plus Jakarta Sans', sans-serif; }
+          .glassmorphism {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+          }
+          .animate-mesh {
+            background: radial-gradient(at 40% 20%, hsla(228,100%,74%,1) 0px, transparent 50%),
+                        radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
+                        radial-gradient(at 0% 50%, hsla(355,100%,93%,1) 0px, transparent 50%),
+                        radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%),
+                        radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%),
+                        radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%),
+                        radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%);
+            filter: blur(60px);
+            opacity: 0.15;
+          }
+        </style>
+      `}
+    </head>
+    <body class="bg-slate-50 text-slate-900 min-h-screen relative overflow-hidden transition-colors duration-300">
+      <div class="absolute inset-0 z-0 pointer-events-none animate-mesh"></div>
+      
+      <div class="min-h-screen flex items-center justify-center p-6 relative z-10">
+        <div class="glassmorphism max-w-lg w-full p-10 rounded-3xl shadow-2xl text-center">
+          <div class="w-20 h-20 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <h2 class="text-3xl font-bold text-slate-900 mb-4">Pendaftaran Berhasil!</h2>
+          <p class="text-slate-600 mb-8 leading-relaxed">
+            Ruang kerja CMS Anda telah disiapkan. Harap simpan <strong>Tenant ID</strong> ini dengan aman untuk referensi konfigurasi.
+          </p>
+          <div class="bg-white/50 p-4 rounded-xl border border-slate-200 mb-8 font-mono text-sm break-all text-blue-600 shadow-inner">
+            {tenantId}
+          </div>
+          <a href="https://studio.nuansa.net/dashboard" class="inline-block bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-lg">
+            Masuk ke Dashboard
+          </a>
+        </div>
+      </div>
+    </body>
+  </html>
+)
 
 // Middleware Interceptor untuk Analytics & Redirects
 app.use('*', async (c, next) => {
@@ -456,6 +520,30 @@ app.post('/api/order', async (c) => {
       "INSERT INTO orders (id, product_id, customer_name, customer_phone, quantity, total_price, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')"
     ).bind(crypto.randomUUID(), productId, customerName, customerPhone, quantity, totalPrice).run()
 
+    // Kirim notifikasi Telegram
+    c.executionCtx.waitUntil((async () => {
+      try {
+        const product: any = await c.env.DB.prepare("SELECT name FROM products WHERE id = ?").bind(productId).first()
+        const productName = product?.name || 'Produk'
+        
+        const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings WHERE key IN ('telegram_bot_token', 'telegram_chat_id')").all()
+        const settings = rawSettings.reduce((acc: any, curr: any) => { acc[curr.key] = curr.value; return acc }, {})
+        const token = settings['telegram_bot_token']
+        const chatId = settings['telegram_chat_id']
+
+        if (token && chatId) {
+          const message = `🛒 *Pesanan Baru!*\n\n*Nama:* ${customerName}\n*No. WA:* ${customerPhone}\n*Produk:* ${productName} (x${quantity})\n*Total:* Rp ${totalPrice.toLocaleString('id-ID')}\n*Status:* Pending`
+          await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'Markdown' })
+          })
+        }
+      } catch (e) {
+        console.error('Gagal mengirim notifikasi Telegram:', e)
+      }
+    })())
+
     if (waUrl) return c.redirect(waUrl)
     return c.redirect('/katalog')
   } catch (e) {
@@ -762,10 +850,189 @@ app.post('/api/enroll', async (c) => {
       sameSite: 'Lax',
     })
 
+    // Kirim notifikasi Telegram
+    c.executionCtx.waitUntil((async () => {
+      try {
+        const course: any = await c.env.DB.prepare("SELECT title FROM courses WHERE id = ?").bind(courseId).first()
+        const courseTitle = course?.title || 'Kursus'
+
+        const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings WHERE key IN ('telegram_bot_token', 'telegram_chat_id')").all()
+        const settings = rawSettings.reduce((acc: any, curr: any) => { acc[curr.key] = curr.value; return acc }, {})
+        const botToken = settings['telegram_bot_token']
+        const chatId = settings['telegram_chat_id']
+
+        if (botToken && chatId) {
+          const message = `🎓 *Pendaftar Kelas Baru!*\n\n*Email:* ${email}\n*Kelas:* ${courseTitle}\n*Harga:* Rp ${price.toLocaleString('id-ID')}`
+          await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'Markdown' })
+          })
+        }
+      } catch (e) {
+        console.error('Gagal mengirim notifikasi Telegram:', e)
+      }
+    })())
+
     return c.redirect(`/belajar/${courseSlug}`)
   } catch(e) {
     console.error(e)
     return c.redirect('/belajar')
+  }
+})
+
+// Rute Registrasi & Login
+app.get('/login', (c) => c.redirect('https://studio.nuansa.net'))
+
+app.get('/register', (c) => {
+  return c.html(
+    <html lang="id">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Nuansa Studio - Buat Website Anda</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        {html`
+          <script>
+            tailwind.config = {
+              darkMode: 'class'
+            }
+          </script>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+            body { font-family: 'Plus Jakarta Sans', sans-serif; }
+            .glassmorphism {
+              background: rgba(255, 255, 255, 0.7);
+              backdrop-filter: blur(16px);
+              -webkit-backdrop-filter: blur(16px);
+              border: 1px solid rgba(255, 255, 255, 0.5);
+            }
+            .animate-mesh {
+              background: radial-gradient(at 40% 20%, hsla(228,100%,74%,1) 0px, transparent 50%),
+                          radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
+                          radial-gradient(at 0% 50%, hsla(355,100%,93%,1) 0px, transparent 50%),
+                          radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%),
+                          radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%),
+                          radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%),
+                          radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%);
+              filter: blur(60px);
+              opacity: 0.15;
+            }
+          </style>
+        `}
+      </head>
+      <body class="bg-slate-50 text-slate-900 min-h-screen selection:bg-blue-500/30 transition-colors duration-300">
+        <div class="min-h-screen relative overflow-hidden flex flex-col">
+          <div class="absolute inset-0 z-0 pointer-events-none animate-mesh"></div>
+
+          <nav class="w-full max-w-6xl mx-auto px-6 py-8 relative z-10 flex justify-between items-center border-b border-slate-200/50">
+            <div class="flex items-center gap-3">
+              <a href="/" class="text-xl font-bold tracking-tight">Nuansa<span class="font-normal text-slate-500">.net</span></a>
+            </div>
+            <div class="hidden md:flex gap-4 items-center text-sm font-medium">
+              <a href="/login" class="text-blue-600 hover:text-blue-700 transition px-5 py-2.5 rounded-xl bg-blue-50 border border-blue-100">Masuk ke Dashboard</a>
+            </div>
+          </nav>
+
+          <main class="flex-grow w-full max-w-6xl mx-auto px-6 py-12 md:py-20 relative z-10 grid md:grid-cols-2 gap-16 items-center">
+            <div>
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-sm font-medium border border-blue-100 mb-6">
+                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                Omni-Platform Baru
+              </div>
+              <h1 class="text-5xl md:text-6xl font-extrabold leading-[1.1] tracking-tight mb-6">
+                Mulai Kelola Konten Anda.
+              </h1>
+              <p class="text-lg text-slate-600 mb-10 leading-relaxed max-w-md">
+                Daftar sekarang untuk mendapatkan ruang kerja (Tenant) instan dan bangun platform berkinerja tinggi bersama Nuansa.
+              </p>
+            </div>
+
+            <div class="glassmorphism p-8 md:p-10 rounded-3xl shadow-2xl relative">
+              <div class="relative">
+                <h3 class="text-2xl font-bold mb-2">Daftar Akun Klien</h3>
+                <p class="text-sm text-slate-500 mb-8">Buat ruang kerja (Tenant) instan Anda sendiri.</p>
+                
+                <form method="POST" action="/api/tenants" class="space-y-6">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Nama Perusahaan / Website</label>
+                    <input type="text" name="name" placeholder="Misal: PT Maju Bersama" required class="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 transition shadow-inner" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Email Administrator Utama</label>
+                    <input type="email" name="email" placeholder="admin@majubersama.com" required class="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 transition shadow-inner" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Kata Sandi (Password)</label>
+                    <input type="password" name="password" placeholder="Min. 8 karakter" required minlength="8" class="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 transition shadow-inner" />
+                  </div>
+                  <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-blue-500/20 mt-4">
+                    Mulai Sekarang &rarr;
+                  </button>
+                </form>
+              </div>
+            </div>
+          </main>
+        </div>
+      </body>
+    </html>
+  )
+})
+
+app.post('/api/tenants', async (c) => {
+  try {
+    const contentType = c.req.header('content-type') || ''
+    let name = ''
+    let email = ''
+    let password = ''
+    
+    if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
+      const formData = await c.req.parseBody()
+      name = formData['name'] as string
+      email = formData['email'] as string
+      password = formData['password'] as string
+    } else {
+      const body = await c.req.json()
+      name = body.name
+      email = body.email
+      password = body.password
+    }
+
+    if (!name || !email || !password) {
+      return c.text('Name, Email, and Password are required', 400)
+    }
+
+    const tenantId = crypto.randomUUID()
+    const userId = crypto.randomUUID()
+    const nowMs = Date.now()
+
+    // Hash password using Web Crypto API (SHA-256)
+    const msgUint8 = new TextEncoder().encode(password)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashedPassword = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+
+    await c.env.MASTER_DB.prepare(
+      "INSERT INTO tenants (id, name, plan, created_at) VALUES (?, ?, ?, ?)"
+    ).bind(tenantId, name, 'gratis', nowMs).run()
+
+    await c.env.MASTER_DB.prepare(
+      "INSERT INTO users (id, tenant_id, email, password, role, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+    ).bind(userId, tenantId, email, hashedPassword, 'admin', nowMs).run()
+
+    if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
+      return c.html(<SuccessPage tenantId={tenantId} />)
+    }
+
+    return c.json({
+      success: true,
+      message: 'Tenant successfully registered',
+      tenantId: tenantId,
+      userId: userId
+    }, 201)
+  } catch (error: any) {
+    console.error('Registration error:', error)
+    return c.text(`Internal Server Error: ${error.message}`, 500)
   }
 })
 

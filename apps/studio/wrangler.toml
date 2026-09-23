@@ -11,11 +11,13 @@ routes = [
 binding = "DB"
 database_name = "nuansa-tenant-db"
 database_id = "a174c345-0a7a-4a0a-b11e-ae7964778b3b"
+migrations_dir = "../../packages/db/migrations"
 
 [[d1_databases]]
 binding = "MASTER_DB"
 database_name = "nuansa-master-db"
 database_id = "cff9dfe9-92ed-47cd-a73f-1571535d3a00"
+migrations_dir = "../../packages/db/migrations"
 
 [[r2_buckets]]
 binding = "VAULT_BUCKET"

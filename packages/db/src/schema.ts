@@ -12,6 +12,7 @@ export const users = sqliteTable('users', {
   id: text('id').primaryKey(),
   tenantId: text('tenant_id').references(() => tenants.id),
   email: text('email').notNull().unique(),
+  password: text('password').notNull(),
   role: text('role').notNull().default('editor'), // admin, editor, author
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 });
@@ -122,4 +123,9 @@ export const enrollments = sqliteTable('enrollments', {
   studentEmail: text('student_email').notNull(),
   accessToken: text('access_token').notNull().unique(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
+});
+
+export const settings = sqliteTable('settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
 });

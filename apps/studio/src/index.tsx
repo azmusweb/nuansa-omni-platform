@@ -13,9 +13,14 @@ import { Products } from './pages/Products'
 import { Orders } from './pages/Orders'
 import { Learn } from './pages/Learn'
 import { Lessons } from './pages/Lessons'
+import { Login } from './pages/Login'
 import { createDb, tenants, users, transactions, products } from '@nuansa/db'
 import { desc } from 'drizzle-orm'
 import type { FC } from 'hono/jsx'
+import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
+import { sign, verify } from 'hono/jwt'
+
+const JWT_SECRET = 'nuansa_super_secret_key_2026'
 
 type Bindings = {
   VAULT_BUCKET: R2Bucket
@@ -25,322 +30,82 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>()
 
-const SuccessPage: FC<{ tenantId: string }> = ({ tenantId }) => (
-  <html lang="id">
-    <head>
-      <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Pendaftaran Berhasil - Nuansa Studio</title>
-      <script src="https://cdn.tailwindcss.com"></script>
-      {html`
-        <script>
-          tailwind.config = {
-            darkMode: 'class'
-          }
-        </script>
-        <script>
-          if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-          } else {
-            document.documentElement.classList.remove('dark');
-          }
-          window.addEventListener('storage', (e) => {
-            if (e.key === 'theme') {
-              if (e.newValue === 'dark') document.documentElement.classList.add('dark');
-              else document.documentElement.classList.remove('dark');
-            }
-          });
-          function toggleTheme() {
-            if (document.documentElement.classList.contains('dark')) {
-              document.documentElement.classList.remove('dark');
-              localStorage.setItem('theme', 'light');
-            } else {
-              document.documentElement.classList.add('dark');
-              localStorage.setItem('theme', 'dark');
-            }
-          }
-        </script>
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-          body { font-family: 'Plus Jakarta Sans', sans-serif; }
-          .glassmorphism {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-          }
-          .dark .glassmorphism {
-            background: rgba(15, 23, 42, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-          }
-          .animate-mesh {
-            background: radial-gradient(at 40% 20%, hsla(228,100%,74%,1) 0px, transparent 50%),
-                        radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
-                        radial-gradient(at 0% 50%, hsla(355,100%,93%,1) 0px, transparent 50%),
-                        radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%),
-                        radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%),
-                        radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%),
-                        radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%);
-            filter: blur(60px);
-            opacity: 0.15;
-          }
-          .dark .animate-mesh {
-            background: radial-gradient(at 40% 20%, hsla(228,100%,74%,1) 0px, transparent 50%),
-                        radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
-                        radial-gradient(at 0% 50%, hsla(280,100%,50%,1) 0px, transparent 50%),
-                        radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%),
-                        radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%),
-                        radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%),
-                        radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%);
-            opacity: 0.1;
-          }
-        </style>
-      `}
-    </head>
-    <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-200 min-h-screen relative overflow-hidden transition-colors duration-300">
-      <div class="absolute inset-0 z-0 pointer-events-none animate-mesh"></div>
-      
-      <div class="absolute top-4 right-4 z-50">
-        <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" title="Toggle Theme">
-          <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-          <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-        </button>
-      </div>
+// Middleware Autentikasi
+app.use('*', async (c, next) => {
+  const path = c.req.path
+  if (path === '/login' || path === '/api/login' || path.startsWith('/assets')) {
+    return next()
+  }
 
-      <div class="min-h-screen flex items-center justify-center p-6 relative z-10">
-        <div class="glassmorphism max-w-lg w-full p-10 rounded-3xl shadow-2xl text-center">
-          <div class="w-20 h-20 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
-            </svg>
-          </div>
-          <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">Pendaftaran Berhasil!</h2>
-          <p class="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-            Ruang kerja CMS Anda telah disiapkan. Harap simpan <strong class="text-slate-900 dark:text-white">Tenant ID</strong> ini dengan aman untuk referensi konfigurasi.
-          </p>
-          <div class="bg-white/50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50 mb-8 font-mono text-sm break-all text-brand-600 dark:text-blue-400 shadow-inner">
-            {tenantId}
-          </div>
-          <a href="/dashboard" class="inline-block bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-lg shadow-brand-500/20">
-            Masuk ke Dashboard
-          </a>
-        </div>
-      </div>
-    </body>
-  </html>
-)
+  const token = getCookie(c, 'auth_token')
+  if (!token) {
+    return c.redirect('/login')
+  }
 
-// Rute Landing Page (UI)
-app.get('/', (c) => {
-  return c.html(
-    <html lang="id">
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Nuansa Studio - Buat Website Anda</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        {html`
-          <script>
-            tailwind.config = {
-              darkMode: 'class'
-            }
-          </script>
-          <script>
-            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-              document.documentElement.classList.add('dark');
-            } else {
-              document.documentElement.classList.remove('dark');
-            }
-            window.addEventListener('storage', (e) => {
-              if (e.key === 'theme') {
-                if (e.newValue === 'dark') document.documentElement.classList.add('dark');
-                else document.documentElement.classList.remove('dark');
-              }
-            });
-            function toggleTheme() {
-              if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-              } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-              }
-            }
-          </script>
-          <style>
-            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-            body { font-family: 'Plus Jakarta Sans', sans-serif; }
-            .glassmorphism {
-              background: rgba(255, 255, 255, 0.7);
-              backdrop-filter: blur(16px);
-              -webkit-backdrop-filter: blur(16px);
-              border: 1px solid rgba(255, 255, 255, 0.5);
-            }
-            .dark .glassmorphism {
-              background: rgba(15, 23, 42, 0.7);
-              border: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            .animate-mesh {
-              background: radial-gradient(at 40% 20%, hsla(228,100%,74%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 50%, hsla(355,100%,93%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%);
-              filter: blur(60px);
-              opacity: 0.15;
-            }
-            .dark .animate-mesh {
-              background: radial-gradient(at 40% 20%, hsla(228,100%,74%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 50%, hsla(280,100%,50%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%);
-              opacity: 0.1;
-            }
-          </style>
-        `}
-      </head>
-      <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-200 min-h-screen selection:bg-brand-500/30 transition-colors duration-300">
-        <div class="min-h-screen relative overflow-hidden flex flex-col">
-          {/* Background Ornaments */}
-          <div class="absolute inset-0 z-0 pointer-events-none animate-mesh"></div>
-
-          {/* Navbar */}
-          <nav class="w-full max-w-6xl mx-auto px-6 py-8 relative z-10 flex justify-between items-center border-b border-slate-200/50 dark:border-slate-800/50">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-              </div>
-              <span class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Nuansa<span class="text-slate-500 dark:text-slate-400 font-normal">Studio</span></span>
-            </div>
-            <div class="hidden md:flex gap-4 items-center text-sm font-medium text-slate-600 dark:text-slate-400">
-              <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" title="Toggle Theme">
-                <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-              </button>
-              <a href="/dashboard" class="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition px-5 py-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20">Masuk ke Dashboard</a>
-            </div>
-          </nav>
-
-          {/* Hero Section */}
-          <main class="flex-grow w-full max-w-6xl mx-auto px-6 py-12 md:py-20 relative z-10 grid md:grid-cols-2 gap-16 items-center">
-            <div>
-              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-sm font-medium border border-brand-500/20 mb-6">
-                <span class="w-2 h-2 rounded-full bg-brand-500 dark:bg-brand-400 animate-pulse"></span>
-                Omni-Platform Baru
-              </div>
-              <h1 class="text-5xl md:text-6xl font-extrabold text-slate-900 dark:text-white leading-[1.1] tracking-tight mb-6">
-                Mulai Kelola Konten Anda.
-              </h1>
-              <p class="text-lg text-slate-600 dark:text-slate-400 mb-10 leading-relaxed max-w-md">
-                Daftar sekarang untuk mendapatkan ruang kerja (Tenant) instan dan bangun platform berkinerja tinggi bersama Nuansa.
-              </p>
-            </div>
-
-            <div class="glassmorphism p-8 md:p-10 rounded-3xl shadow-2xl relative">
-              <div class="relative">
-                <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Daftar Akun Klien</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-8">Buat ruang kerja (Tenant) instan Anda sendiri.</p>
-                
-                <form method="POST" action="/api/tenants" class="space-y-6">
-                  <div>
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Nama Perusahaan / Website</label>
-                    <input 
-                      type="text" 
-                      name="name" 
-                      placeholder="Misal: PT Maju Bersama" 
-                      required
-                      class="w-full bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-brand-500 transition shadow-inner"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Email Administrator Utama</label>
-                    <input 
-                      type="email" 
-                      name="email" 
-                      placeholder="admin@majubersama.com" 
-                      required
-                      class="w-full bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-brand-500 transition shadow-inner"
-                    />
-                  </div>
-                  <button 
-                    type="submit" 
-                    class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-brand-500/20 mt-4"
-                  >
-                    Mulai Sekarang &rarr;
-                  </button>
-                </form>
-              </div>
-            </div>
-          </main>
-        </div>
-      </body>
-    </html>
-  )
+  try {
+    const payload = await verify(token, JWT_SECRET)
+    c.set('user', payload)
+    return next()
+  } catch (e) {
+    deleteCookie(c, 'auth_token')
+    return c.redirect('/login')
+  }
 })
 
-// Endpoint untuk mendaftarkan Tenant Baru (API)
-app.post('/api/tenants', async (c) => {
-  try {
-    // Kita simpan ke MASTER_DB
-    const db = createDb(c.env.MASTER_DB)
-    
-    const contentType = c.req.header('content-type') || ''
-    let name = ''
-    let email = ''
-    
-    if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
-      const formData = await c.req.parseBody()
-      name = formData['name'] as string
-      email = formData['email'] as string
-    } else {
-      const body = await c.req.json()
-      name = body.name
-      email = body.email
-    }
+// Rute Landing Page (UI)
+app.get('/', (c) => c.redirect('/dashboard'))
 
-    if (!name || !email) {
-      return c.text('Name and Email are required', 400)
-    }
+// --- RUTE AUTHENTIKASI ---
+app.get('/login', (c) => c.html(<Login />))
 
-    const tenantId = crypto.randomUUID()
-    const userId = crypto.randomUUID()
-    const now = new Date()
+app.post('/api/login', async (c) => {
+  const body = await c.req.parseBody()
+  const email = body['email'] as string
+  const password = body['password'] as string
 
-    await db.batch([
-      db.insert(tenants).values({
-        id: tenantId,
-        name: name,
-        plan: 'gratis',
-        createdAt: now,
-      }),
-      db.insert(users).values({
-        id: userId,
-        tenantId: tenantId,
-        email: email,
-        role: 'admin',
-        createdAt: now,
-      })
-    ])
-
-    if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
-      return c.html(<SuccessPage tenantId={tenantId} />)
-    }
-
-    return c.json({
-      success: true,
-      message: 'Tenant successfully registered',
-      tenantId: tenantId,
-      userId: userId
-    }, 201)
-  } catch (error: any) {
-    console.error('Registration error:', error)
-    return c.text(`Internal Server Error: ${error.message}`, 500)
+  if (!email || !password) {
+    return c.html(<Login error="Email dan kata sandi wajib diisi" />)
   }
+
+  // Hash password input
+  const msgUint8 = new TextEncoder().encode(password)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  const hashedPassword = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+
+  // Cari user di MASTER_DB
+  const { results } = await c.env.MASTER_DB.prepare(
+    "SELECT id, tenant_id, role, password FROM users WHERE email = ?"
+  ).bind(email).all()
+
+  const user = results[0] as any
+
+  if (!user || user.password !== hashedPassword) {
+    return c.html(<Login error="Email atau kata sandi salah" />)
+  }
+
+  // Generate JWT
+  const token = await sign({
+    userId: user.id,
+    tenantId: user.tenant_id,
+    role: user.role,
+    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 // 7 hari
+  }, JWT_SECRET)
+
+  setCookie(c, 'auth_token', token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'Lax',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7
+  })
+
+  return c.redirect('/dashboard')
+})
+
+app.get('/api/logout', (c) => {
+  deleteCookie(c, 'auth_token')
+  return c.redirect('/login')
 })
 
 // --- RUTE HALAMAN UI ---
@@ -456,6 +221,32 @@ app.get('/orders', async (c) => {
   } catch (e) {
     console.error(e)
     return c.html(<Orders currentPath={c.req.path} orders={[]} />)
+  }
+})
+
+app.post('/api/upgrade', async (c) => {
+  try {
+    const body = await c.req.parseBody()
+    const targetPlan = body['target_plan'] as string
+    
+    const txId = crypto.randomUUID()
+    const tenantId = "tenant-local-dev-123" // Simulasi
+    
+    await c.env.DB.prepare(
+      "INSERT INTO transactions (id, tenant_id, type, amount, status, details) VALUES (?, ?, ?, ?, ?, ?)"
+    ).bind(
+      txId,
+      tenantId,
+      'plan_upgrade',
+      0,
+      'pending',
+      JSON.stringify({ target_plan: targetPlan })
+    ).run()
+
+    return c.redirect('/settings?upgrade_requested=true')
+  } catch (e) {
+    console.error(e)
+    return c.text('Error', 500)
   }
 })
 
@@ -575,15 +366,17 @@ app.post('/api/learn/lesson/delete', async (c) => {
 })
 
 app.get('/settings', async (c) => {
+  const isSaved = c.req.query('saved') === 'true'
+  const upgradeRequested = c.req.query('upgrade_requested') === 'true'
   try {
     const { results } = await c.env.DB.prepare("SELECT * FROM settings").all()
     const settings = results.reduce((acc: any, curr: any) => {
       acc[curr.key] = curr.value
       return acc
     }, {})
-    return c.html(<Settings currentPath={c.req.path} settings={settings} />)
+    return c.html(<Settings currentPath={c.req.path} settings={settings} isSaved={isSaved} upgradeRequested={upgradeRequested} />)
   } catch (e) {
-    return c.html(<Settings currentPath={c.req.path} settings={{}} />)
+    return c.html(<Settings currentPath={c.req.path} settings={{}} isSaved={isSaved} upgradeRequested={upgradeRequested} />)
   }
 })
 

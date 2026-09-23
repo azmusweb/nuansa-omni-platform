@@ -22,9 +22,9 @@ export const Posts: FC<{ currentPath: string, posts?: Post[] }> = ({ currentPath
       <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
 
       <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center gap-4 bg-dark-800 border border-slate-700 rounded-xl px-4 py-2 w-96 focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500 transition">
-          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-          <input type="text" placeholder="Cari artikel..." class="bg-transparent border-none outline-none text-sm text-white w-full placeholder-slate-500" />
+        <div class="flex items-center gap-4 bg-dark-800/80 border border-brand-500/20 rounded-xl px-4 py-2 w-96 focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500 transition">
+          <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <input type="text" placeholder="Cari artikel..." class="bg-transparent border-none outline-none text-sm text-white w-full placeholder-slate-500 font-mono" />
         </div>
         <button onclick="openModal()" class="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition shadow-lg shadow-brand-500/20 flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -32,16 +32,16 @@ export const Posts: FC<{ currentPath: string, posts?: Post[] }> = ({ currentPath
         </button>
       </div>
 
-      <div class="bg-dark-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl shadow-xl overflow-hidden">
+      <div class="bg-dark-800/50 backdrop-blur-sm border border-brand-500/20 rounded-2xl shadow-xl overflow-hidden">
         {posts.length === 0 ? (
           <div class="p-12 text-center text-slate-400">
-            <svg class="w-12 h-12 mx-auto text-slate-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            <p>Belum ada artikel. Klik "Tulis Artikel Baru" untuk memulai.</p>
+            <svg class="w-12 h-12 mx-auto text-brand-500/50 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <p class="font-mono">Belum ada artikel. Klik "Tulis Artikel Baru" untuk memulai.</p>
           </div>
         ) : (
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="border-b border-slate-700/50 text-slate-400 text-sm">
+              <tr class="border-b border-brand-500/20 text-brand-400 text-sm font-mono uppercase tracking-wider">
                 <th class="p-4 font-medium pl-6">Judul Artikel</th>
                 <th class="p-4 font-medium">Status</th>
                 <th class="p-4 font-medium">Tipe</th>
@@ -49,9 +49,9 @@ export const Posts: FC<{ currentPath: string, posts?: Post[] }> = ({ currentPath
                 <th class="p-4 font-medium text-right pr-6">Aksi</th>
               </tr>
             </thead>
-            <tbody class="text-sm divide-y divide-slate-700/50">
+            <tbody class="text-sm divide-y divide-brand-500/10">
               {posts.map((post) => (
-                <tr class="hover:bg-slate-800/50 transition">
+                <tr class="hover:bg-brand-500/5 transition">
                   <td class="p-4 pl-6 text-white font-medium">{post.title}</td>
                   <td class="p-4">
                     <span class={`px-3 py-1 rounded-full text-xs font-medium border 
@@ -140,8 +140,8 @@ export const Posts: FC<{ currentPath: string, posts?: Post[] }> = ({ currentPath
                   
                   <div class="p-4 space-y-4">
                     <div>
-                      <label class="block text-slate-400 text-xs font-medium mb-1">SEO Title (Opsional)</label>
-                      <input type="text" id="meta-title" placeholder="Kustom SEO Title..." class="w-full bg-dark-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none transition" />
+                      <label class="block text-brand-400 font-mono text-xs font-medium mb-1 uppercase tracking-wider">SEO Title (Opsional)</label>
+                      <input type="text" id="meta-title" placeholder="Kustom SEO Title..." class="w-full bg-dark-900 border border-brand-500/30 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none transition" />
                     </div>
                     <div>
                       <label class="block text-slate-400 text-xs font-medium mb-1">Meta Description</label>

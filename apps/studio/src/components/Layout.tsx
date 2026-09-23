@@ -25,103 +25,62 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
         <title>{title} | Nuansa Studio</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
         {html`
           <script src="https://cdn.tailwindcss.com"></script>
           <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+            body { font-family: 'Plus Jakarta Sans', sans-serif; }
             .glassmorphism {
-              background: rgba(255, 255, 255, 0.7);
+              background: rgba(15, 23, 42, 0.7);
               backdrop-filter: blur(16px);
               -webkit-backdrop-filter: blur(16px);
-              border: 1px solid rgba(255, 255, 255, 0.5);
-            }
-            .dark .glassmorphism {
-              background: rgba(15, 23, 42, 0.7);
               border: 1px solid rgba(255, 255, 255, 0.1);
             }
-            .animate-mesh {
-              background: radial-gradient(at 40% 20%, hsla(228,100%,74%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 50%, hsla(355,100%,93%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%);
-              filter: blur(60px);
-              opacity: 0.15;
+            /* Mesh Animation */
+            @keyframes mesh {
+              0% { transform: scale(1) translate(0, 0); }
+              33% { transform: scale(1.1) translate(30px, -50px); }
+              66% { transform: scale(0.9) translate(-20px, 20px); }
+              100% { transform: scale(1) translate(0, 0); }
             }
-            .dark .animate-mesh {
-              background: radial-gradient(at 40% 20%, hsla(228,100%,74%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 50%, hsla(280,100%,50%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%);
-              opacity: 0.1;
-            }
+            .animate-mesh { animation: mesh 10s ease-in-out infinite alternate; }
           </style>
           <script>
             tailwind.config = {
               darkMode: 'class',
               theme: {
                 extend: {
-                  fontFamily: {
-                    sans: ['Outfit', 'sans-serif'],
-                  },
                   colors: {
-                    dark: {
-                      900: '#0F172A',
-                      800: '#1E293B',
-                      700: '#334155',
-                    },
-                    brand: {
-                      500: '#3B82F6',
-                      600: '#2563EB',
-                    }
+                    brand: { 400: '#10b981', 500: '#059669', 600: '#047857' }, // Emerald/Matrix green
+                    dark: { 900: '#050505', 800: '#111111', 700: '#334155' }
+                  },
+                  fontFamily: {
+                    mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace']
                   }
                 }
               }
             }
           </script>
           <script>
-            // Theme setup
-            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-              document.documentElement.classList.add('dark');
-            } else {
-              document.documentElement.classList.remove('dark');
-            }
-            window.addEventListener('storage', (e) => {
-              if (e.key === 'theme') {
-                if (e.newValue === 'dark') document.documentElement.classList.add('dark');
-                else document.documentElement.classList.remove('dark');
-              }
-            });
-
-            function toggleTheme() {
-              if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-              } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-              }
-            }
+            // Force dark mode
+            document.documentElement.classList.add('dark')
           </script>
         `}
       </head>
-      <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-200 font-sans antialiased min-h-screen flex overflow-hidden transition-colors duration-300 relative">
-        <div class="absolute inset-0 z-0 pointer-events-none animate-mesh"></div>
+      <body class="bg-dark-900 text-slate-300 font-mono min-h-screen flex overflow-hidden selection:bg-brand-500/30 relative">
+        <div class="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-brand-600 blur-[120px] mix-blend-screen animate-mesh pointer-events-none opacity-20"></div>
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] pointer-events-none"></div>
         
         {/* Sidebar */}
-        <aside class="w-64 glassmorphism border-r border-slate-200/50 dark:border-slate-700/50 flex flex-col justify-between hidden md:flex z-10 shadow-2xl relative">
+        <aside class="w-64 glassmorphism border-r border-brand-500/20 flex-col justify-between hidden md:flex z-10 shadow-2xl relative">
           <div>
-            <div class="h-20 flex items-center px-8 border-b border-slate-200/50 dark:border-slate-700/50">
+            <div class="h-20 flex items-center px-8 border-b border-brand-500/20">
               <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-brand-500/20">
-                  N
+                <div class="w-10 h-10 rounded-xl bg-dark-800 border border-brand-500/50 flex items-center justify-center shadow-lg transform hover:rotate-12 transition-transform">
+                  <span class="font-mono font-bold text-brand-400 text-xl">S</span>
                 </div>
-                <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">Nuansa<span class="font-light text-slate-500 dark:text-slate-400">Studio</span></span>
+                <span class="font-bold text-xl tracking-tight text-white font-mono">Nuansa<span class="font-normal text-brand-500">_Studio</span></span>
               </div>
             </div>
             
@@ -133,11 +92,11 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
                     href={item.href}
                     class={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
                       isActive 
-                      ? 'bg-brand-500/10 text-brand-600 dark:text-brand-500 border border-brand-500/20' 
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-slate-800/50'
+                      ? 'bg-brand-500/20 text-brand-400 border border-brand-500/30' 
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                     }`}
                   >
-                    <svg class={`w-5 h-5 ${isActive ? 'text-brand-600 dark:text-brand-500' : 'text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class={`w-5 h-5 ${isActive ? 'text-brand-400' : 'text-slate-500 group-hover:text-slate-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={item.icon}></path>
                     </svg>
                     <span class="font-medium text-sm">{item.label}</span>
@@ -147,14 +106,14 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
             </nav>
           </div>
           
-          <div class="p-4 border-t border-slate-200/50 dark:border-slate-700/50">
+          <div class="p-4 border-t border-brand-500/20">
             <div class="flex items-center gap-3 px-4 py-2">
-              <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200">
+              <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-sm font-medium border border-brand-500/50 text-brand-400">
                 AD
               </div>
               <div>
-                <p class="text-sm font-semibold text-slate-900 dark:text-white">Admin Utama</p>
-                <p class="text-xs text-slate-500">Premium Plan</p>
+                <p class="text-sm font-semibold text-white">Admin Klien</p>
+                <p class="text-xs text-brand-500">Pro Plan</p>
               </div>
             </div>
           </div>
@@ -163,15 +122,15 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
         {/* Main Content */}
         <main class="flex-1 flex flex-col relative h-screen overflow-hidden z-10">
           {/* Top Header */}
-          <header class="h-20 glassmorphism border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between px-8 z-10 sticky top-0">
-            <h1 class="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">{title}</h1>
+          <header class="h-20 glassmorphism border-b border-brand-500/20 flex items-center justify-between px-8 z-10 sticky top-0">
+            <h1 class="text-2xl font-bold text-brand-400 tracking-tight">&gt; {title.toUpperCase()}</h1>
             <div class="flex items-center gap-4">
-              <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" title="Toggle Theme">
-                <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-              </button>
-              <a href="https://cloudflare.com" target="_blank" class="px-4 py-2 bg-white/50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-sm font-medium rounded-lg transition border border-slate-200 dark:border-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-200">
-                <svg class="w-4 h-4 text-orange-500 dark:text-orange-400" viewBox="0 0 24 24" fill="currentColor"><path d="M16.924 11.233c-.767-.936-2.023-1.47-3.23-1.47h-.37c-.722-1.99-2.617-3.376-4.81-3.376A5.132 5.132 0 0 0 3.395 11.45 4.542 4.542 0 0 0 4.53 20.47h11.96c3.486 0 5.485-2.88 5.485-5.59 0-2.316-1.505-4.475-4.05-4.706M13.633 13.064c0 .324-.265.59-.59.59H6.945a.592.592 0 0 1 0-1.18h6.098c.325 0 .59.266.59.59"/></svg>
+              <a href="/api/logout" class="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-medium rounded-lg transition border border-red-500/20 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                Keluar
+              </a>
+              <a href="https://cloudflare.com" target="_blank" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sm font-medium rounded-lg transition border border-slate-700 flex items-center gap-2 text-slate-200">
+                <svg class="w-4 h-4 text-orange-400" viewBox="0 0 24 24" fill="currentColor"><path d="M16.924 11.233c-.767-.936-2.023-1.47-3.23-1.47h-.37c-.722-1.99-2.617-3.376-4.81-3.376A5.132 5.132 0 0 0 3.395 11.45 4.542 4.542 0 0 0 4.53 20.47h11.96c3.486 0 5.485-2.88 5.485-5.59 0-2.316-1.505-4.475-4.05-4.706M13.633 13.064c0 .324-.265.59-.59.59H6.945a.592.592 0 0 1 0-1.18h6.098c.325 0 .59.266.59.59"/></svg>
                 Edge Powered
               </a>
             </div>
