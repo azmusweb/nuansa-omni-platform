@@ -70,11 +70,11 @@ export const Login: FC<{ error?: string }> = ({ error }) => {
  <form method="POST" action="/api/login" class="space-y-6">
  <div>
  <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Email</label>
- <input type="email" name="email" placeholder="admin@perusahaan.com" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-brand-500 transition text-gray-900 placeholder-slate-500" />
+ <input type="email" name="email" placeholder="admin@perusahaan.com" required class="w-full bg-white border border-[#ebebeb] rounded-xl px-4 py-3.5 focus:outline-none focus:border-brand-500 transition text-gray-900 placeholder-slate-500" />
  </div>
  <div>
  <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Kata Sandi</label>
- <input type="password" name="password" placeholder="••••••••" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-brand-500 transition text-gray-900 placeholder-slate-500" />
+ <input type="password" name="password" placeholder="••••••••" required class="w-full bg-white border border-[#ebebeb] rounded-xl px-4 py-3.5 focus:outline-none focus:border-brand-500 transition text-gray-900 placeholder-slate-500" />
  </div>
  <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-gray-900 font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-brand-500/20 mt-4">
  Masuk Dasbor &rarr;

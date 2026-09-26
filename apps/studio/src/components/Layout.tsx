@@ -55,12 +55,13 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
  <meta property="og:description" content="Sistem manajemen konten terdepan di jaringan edge." />
  <link rel="preconnect" href="https://fonts.googleapis.com" />
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
- <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+ <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet" />
  {html`
  <script src="https://cdn.tailwindcss.com"></script>
  <style>
- @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
- body { font-family: 'Plus Jakarta Sans', sans-serif; }
+ 
+ body { font-family: 'Inter', sans-serif; }
+ h1, h2, h3, h4, h5, h6, .font-display { font-family: 'Outfit', sans-serif; letter-spacing: -0.01em; }
  .bg-white shadow-sm {
  background: rgba(15, 23, 42, 0.7);
  backdrop-filter: blur(16px);
@@ -96,54 +97,52 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
  theme: {
  extend: {
  colors: {
- brand: { 400: '#10b981', 500: '#059669', 600: '#047857' }, // Emerald/Matrix green
+ brand: { 400: '#3381ff', 500: '#116dff', 600: '#0058ff' }, // Wix Blue
  dark: { 900: '#050505', 800: '#111111', 700: '#334155' }
  },
- fontFamily: {
- mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace']
- }
- }
- }
- }
- </script>
+ fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Outfit', 'sans-serif'] }
+  }
+  }
+  }
+  </script>
  <script>
  // Force dark mode
  
  </script>
  `}
  </head>
- <body class="bg-gray-50 text-gray-700 font-mono min-h-screen flex overflow-hidden selection:bg-brand-500/30 relative">
+ <body class="bg-[#f7f7f7] text-[#161616] min-h-screen flex overflow-hidden selection:bg-brand-500/30 relative">
  
  
  
  {/* Sidebar */}
- <div id="studio-backdrop" class="fixed inset-0 bg-gray-50 backdrop-blur-sm z-40 hidden md:hidden" onclick="document.getElementById('studio-sidebar').classList.add('-translate-x-full'); document.getElementById('studio-backdrop').classList.add('hidden');"></div>
- <aside id="studio-sidebar" class="w-64 bg-white shadow-sm border-r border-gray-200 flex-col justify-between fixed md:relative h-screen z-50 shadow-2xl transform -translate-x-full md:translate-x-0 transition-transform duration-300 md:flex flex">
+ <div id="studio-backdrop" class="fixed inset-0 bg-[#f7f7f7] backdrop-blur-sm z-40 hidden md:hidden" onclick="document.getElementById('studio-sidebar').classList.add('-translate-x-full'); document.getElementById('studio-backdrop').classList.add('hidden');"></div>
+ <aside id="studio-sidebar" class="w-64 bg-white shadow-sm border-r border-[#ebebeb] flex-col justify-between fixed md:relative h-screen z-50 shadow-2xl transform -translate-x-full md:translate-x-0 transition-transform duration-300 md:flex flex">
  <div class="flex flex-col flex-1 min-h-0">
- <div class="h-20 flex-shrink-0 flex items-center px-8 border-b border-gray-200">
+ <div class="h-20 flex-shrink-0 flex items-center px-8 border-b border-[#ebebeb]">
  <div class="flex items-center gap-3">
- <div class="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center shadow-lg transform hover:rotate-12 transition-transform">
- <span class="font-mono font-bold text-brand-600 text-xl">S</span>
+ <div class="w-10 h-10 rounded-xl bg-white border border-[#ebebeb] flex items-center justify-center shadow-lg transform hover:rotate-12 transition-transform">
+ <span class=" font-bold text-brand-600 text-xl">S</span>
  </div>
- <span class="font-bold text-xl tracking-tight text-gray-900 font-mono">Nuansa<span class="font-normal text-brand-600">_Studio</span></span>
+ <span class="font-bold text-xl tracking-tight text-[#161616] ">Nuansa<span class="font-normal text-brand-600">_Studio</span></span>
  </div>
  </div>
  
- <div class="p-4 flex-shrink-0 border-b border-gray-200">
+ <div class="p-4 flex-shrink-0 border-b border-[#ebebeb]">
  <div class="relative">
- <button id="site-switcher-btn" class="w-full flex items-center justify-between px-3 py-2 bg-white border border-gray-200 rounded-lg hover:border-brand-500/70 transition-colors">
+ <button id="site-switcher-btn" class="w-full flex items-center justify-between px-3 py-2 bg-white border border-[#ebebeb] rounded-lg hover:border-brand-500/70 transition-colors">
  <div class="flex flex-col items-start truncate max-w-[80%]">
  <span class="text-xs text-gray-500 font-medium">Active Website</span>
- <span id="active-site-name" class="text-sm font-semibold text-gray-900 truncate w-full text-left">Loading...</span>
+ <span id="active-site-name" class="text-sm font-semibold text-[#161616] truncate w-full text-left">Loading...</span>
  </div>
  <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
  </button>
  
- <div id="site-dropdown" class="absolute top-full left-0 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 hidden max-h-60 overflow-y-auto">
+ <div id="site-dropdown" class="absolute top-full left-0 w-full mt-2 bg-white border border-[#ebebeb] rounded-xl shadow-2xl z-50 hidden max-h-60 overflow-y-auto">
  <div id="site-list" class="p-2 space-y-1">
  {/* Fetched sites will be here */}
  </div>
- <div class="p-2 border-t border-gray-200">
+ <div class="p-2 border-t border-[#ebebeb]">
  <button onclick="document.getElementById('create-site-modal').classList.remove('hidden')" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-brand-600 hover:bg-brand-500/20 rounded-lg transition-colors">
  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
  Buat Website Baru
@@ -161,7 +160,7 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
  return (
  <details class="group" open={isOpen || undefined}>
  <summary class={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer list-none [&::-webkit-details-marker]:hidden ${
- isActive ? 'text-gray-900' : 'text-gray-500 hover:text-brand-700 hover:bg-brand-50'
+ isActive ? 'text-[#161616]' : 'text-gray-500 hover:text-brand-700 hover:bg-brand-50'
  }`}>
  <div class="flex items-center gap-3">
  <svg class={`w-5 h-5 ${isActive ? 'text-brand-600' : 'text-gray-400 group-hover:text-gray-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,7 +170,7 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
  </div>
  <svg class="w-4 h-4 text-gray-400 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
  </summary>
- <div class="pl-4 pr-2 py-1 mt-1 space-y-1 border-l border-gray-200 ml-6">
+ <div class="pl-4 pr-2 py-1 mt-1 space-y-1 border-l border-[#ebebeb] ml-6">
  {item.submenu.map(sub => {
  const isSubActive = currentPath.startsWith(sub.href)
  return (
@@ -205,13 +204,13 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
  </nav>
  </div>
  
- <div class="p-4 border-t flex-shrink-0 border-gray-200 flex items-center justify-between">
+ <div class="p-4 border-t flex-shrink-0 border-[#ebebeb] flex items-center justify-between">
  <div class="flex items-center gap-3 px-4 py-2">
  <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium text-brand-600">
  AD
  </div>
  <div>
- <p class="text-sm font-semibold text-gray-900">Admin Klien</p>
+ <p class="text-sm font-semibold text-[#161616]">Admin Klien</p>
  <p class="text-xs text-brand-600">Pro Plan</p>
  </div>
  </div>
@@ -224,7 +223,7 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
  {/* Main Content */}
  <main class="flex-1 flex flex-col relative h-screen overflow-hidden z-10">
  {/* Top Header */}
- <header class="h-20 bg-white shadow-sm border-b border-gray-200 flex items-center justify-between px-4 md:px-8 z-10 sticky top-0">
+ <header class="h-20 bg-white shadow-sm border-b border-[#ebebeb] flex items-center justify-between px-4 md:px-8 z-10 sticky top-0">
  <div class="flex items-center gap-3">
  <button class="md:hidden text-brand-600 p-2" onclick="document.getElementById('studio-sidebar').classList.remove('-translate-x-full'); document.getElementById('studio-backdrop').classList.remove('hidden');">
  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -236,7 +235,7 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
  Keluar
  </a>
- <a href="#" onclick="window.open(window.location.protocol + '//' + window.location.hostname.replace('studio.', ''), '_blank')" class="hidden md:flex px-4 py-2 bg-brand-600/20 hover:bg-brand-600/40 text-brand-600 text-sm font-medium rounded-lg transition border border-gray-200 items-center gap-2">
+ <a href="#" onclick="window.open(window.location.protocol + '//' + window.location.hostname.replace('studio.', ''), '_blank')" class="hidden md:flex px-4 py-2 bg-brand-600/20 hover:bg-brand-600/40 text-brand-600 text-sm font-medium rounded-lg transition border border-[#ebebeb] items-center gap-2">
  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
  Lihat Website
  </a>
@@ -252,12 +251,12 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
  </main>
 
  {/* Create Site Modal */}
- <div id="create-site-modal" class="fixed inset-0 bg-gray-50 backdrop-blur-sm z-[100] hidden flex items-center justify-center">
- <div class="bg-white shadow-sm p-6 rounded-2xl border border-gray-200 max-w-md w-full mx-4 shadow-2xl relative overflow-hidden">
+ <div id="create-site-modal" class="fixed inset-0 bg-[#f7f7f7] backdrop-blur-sm z-[100] hidden flex items-center justify-center">
+ <div class="bg-white shadow-sm p-6 rounded-2xl border border-[#ebebeb] max-w-md w-full mx-4 shadow-2xl relative overflow-hidden">
  
  <div class="flex items-center justify-between mb-6">
- <h3 class="text-xl font-bold text-gray-900 font-mono">Buat Website Baru</h3>
- <button onclick="document.getElementById('create-site-modal').classList.add('hidden')" class="text-gray-500 hover:text-gray-900 transition">
+ <h3 class="text-xl font-bold text-[#161616] ">Buat Website Baru</h3>
+ <button onclick="document.getElementById('create-site-modal').classList.add('hidden')" class="text-gray-500 hover:text-[#161616] transition">
  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
  </button>
  </div>
@@ -266,12 +265,12 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
  <div>
  <label class="block text-sm font-medium text-gray-700 mb-1">Nama Website (Subdomain)</label>
  <div class="relative flex items-center">
- <input type="text" name="name" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand-500 transition-colors" placeholder="misal: tokosaya" />
+ <input type="text" name="name" required class="w-full bg-white border border-[#ebebeb] rounded-xl px-4 py-3 text-[#161616] focus:outline-none focus:border-brand-500 transition-colors" placeholder="misal: tokosaya" />
  <span class="absolute right-4 text-gray-400 font-medium">.nuansa.net</span>
  </div>
  <p class="text-xs text-gray-500 mt-2">Nantinya Anda bisa menghubungkan domain kustom sendiri dari pengaturan.</p>
  </div>
- <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-gray-900 font-bold py-3 px-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all">
+ <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-[#161616] font-bold py-3 px-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all">
  Buat Website
  </button>
  </form>

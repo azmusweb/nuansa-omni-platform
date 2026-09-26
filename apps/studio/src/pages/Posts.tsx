@@ -37,7 +37,7 @@ export const Posts: FC<{ currentPath: string, posts?: Post[] }> = ({ currentPath
  </button>
  
  {/* Dropdown menu */}
- <div class="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30 py-1">
+ <div class="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-[0_4px_24px_rgba(0,0,0,0.04)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30 py-1">
  <button onclick="setFilterStatus('all')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 ">Semua ({countAll})</button>
  <button onclick="setFilterStatus('published')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 ">Dipublikasikan ({countPublished})</button>
  <button onclick="setFilterStatus('draft')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 ">Draf ({countDraft})</button>
@@ -48,7 +48,7 @@ export const Posts: FC<{ currentPath: string, posts?: Post[] }> = ({ currentPath
 
  <div class="flex items-center gap-3">
  <span class="text-sm text-brand-600 font-semibold uppercase tracking-wide px-2 cursor-pointer hover:opacity-80">Kelola</span>
- <a href="/posts/new" class="bg-brand-600 hover:bg-brand-500 active:scale-95 text-gray-900 px-5 py-2.5 rounded-full font-semibold text-sm transition shadow-md flex items-center justify-center gap-2 shrink-0">
+ <a href="/posts/new" class="bg-brand-600 hover:bg-brand-500 active:scale-95 text-[#161616] px-5 py-2.5 rounded-full font-semibold text-sm transition shadow-md flex items-center justify-center gap-2 shrink-0">
  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
  POSTINGAN BARU
  </a>

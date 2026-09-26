@@ -13,9 +13,9 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  <div class="flex flex-col gap-6">
  
  {/* Panel Kontrol Builder (Header) */}
- <div class="bg-white backdrop-blur-sm border border-gray-200 rounded-2xl shadow-xl flex flex-col overflow-hidden">
+ <div class="bg-white backdrop-blur-sm border border-[#ebebeb] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] flex flex-col overflow-hidden">
  
- <div class="p-4 border-b border-gray-200 shrink-0 bg-gray-50 flex justify-between items-center">
+ <div class="p-4 border-b border-[#ebebeb] shrink-0 bg-gray-50 flex justify-between items-center">
  <h3 class="text-gray-900 font-semibold flex items-center gap-2">
  <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
  Architect Panel
@@ -27,7 +27,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  <div class="flex-1 overflow-y-auto">
  
  {/* Tab Navigasi Sederhana */}
- <div class="flex text-xs font-medium text-gray-500 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+ <div class="flex text-xs font-medium text-gray-500 border-b border-[#ebebeb] bg-gray-50 sticky top-0 z-10">
  <button type="button" class="flex-1 py-3 text-gray-900 border-b-2 border-brand-500" id="tab-global" onclick="switchTab('global')">Global</button>
  <button type="button" class="flex-1 py-3 hover:text-gray-900 transition" id="tab-header" onclick="switchTab('header')">Header</button>
  <button type="button" class="flex-1 py-3 hover:text-gray-900 transition" id="tab-footer" onclick="switchTab('footer')">Footer</button>
@@ -38,15 +38,15 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  <div class="p-5 space-y-6">
  
  {/* PRESET THEMES (Baru Ditambahkan) */}
- <div class="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-xl shadow-inner">
+ <div class="mb-6 p-4 bg-gray-50 border border-[#ebebeb] rounded-xl shadow-inner">
  <label class="block text-brand-600 text-xs font-semibold uppercase tracking-wider mb-3 flex items-center gap-2">
  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
  Preset Desain Instan
  </label>
  <div class="grid grid-cols-3 gap-2">
- <button type="button" onclick="applyPreset('minimalis')" class="py-2 px-1 bg-gray-100 hover:bg-slate-700 border border-gray-200 rounded-lg text-[10px] font-medium text-gray-700 transition">Minimalis</button>
- <button type="button" onclick="applyPreset('korporat')" class="py-2 px-1 bg-gray-100 hover:bg-slate-700 border border-gray-200 rounded-lg text-[10px] font-medium text-gray-700 transition">Korporat</button>
- <button type="button" onclick="applyPreset('kreatif')" class="py-2 px-1 bg-gray-100 hover:bg-slate-700 border border-gray-200 rounded-lg text-[10px] font-medium text-gray-700 transition">Kreatif</button>
+ <button type="button" onclick="applyPreset('minimalis')" class="py-2 px-1 bg-gray-100 hover:bg-slate-700 border border-[#ebebeb] rounded-lg text-[10px] font-medium text-gray-700 transition">Minimalis</button>
+ <button type="button" onclick="applyPreset('korporat')" class="py-2 px-1 bg-gray-100 hover:bg-slate-700 border border-[#ebebeb] rounded-lg text-[10px] font-medium text-gray-700 transition">Korporat</button>
+ <button type="button" onclick="applyPreset('kreatif')" class="py-2 px-1 bg-gray-100 hover:bg-slate-700 border border-[#ebebeb] rounded-lg text-[10px] font-medium text-gray-700 transition">Kreatif</button>
  </div>
  </div>
 
@@ -59,7 +59,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  name="siteName" 
  id="input-siteName"
  value={siteName}
- class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+ class="w-full bg-gray-50 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
  placeholder="Nuansa Web"
  />
  </div>
@@ -80,7 +80,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  type="text" 
  id="display-primaryColor"
  value={primaryColor}
- class="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 font-mono text-sm text-gray-700 focus:outline-none focus:border-brand-500"
+ class="flex-1 bg-gray-50 border border-[#ebebeb] rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-brand-500"
  oninput="document.getElementById('input-primaryColor').value = this.value; triggerUpdate();"
  />
  </div>
@@ -88,7 +88,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
 
  <div>
  <label class="block text-gray-700 text-xs font-semibold uppercase tracking-wider mb-2">Tipografi (Font Utama)</label>
- <select name="fontFamily" id="input-fontFamily" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition">
+ <select name="fontFamily" id="input-fontFamily" class="w-full bg-gray-50 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition">
  <option value="Inter" selected={fontFamily === 'Inter'}>Inter (Modern Sans)</option>
  <option value="Playfair Display" selected={fontFamily === 'Playfair Display'}>Playfair Display (Serif Elegan)</option>
  <option value="Space Grotesk" selected={fontFamily === 'Space Grotesk'}>Space Grotesk (Tech / Edgy)</option>
@@ -105,7 +105,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  <div class="grid grid-cols-2 gap-3">
  <label class="relative cursor-pointer">
  <input type="radio" name="headerLayout" value="left" class="peer sr-only" checked={headerLayout === 'left'} onchange="triggerUpdate()" />
- <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl peer-checked:border-brand-500 peer-checked:ring-1 peer-checked:ring-brand-500 transition opacity-60 peer-checked:opacity-100">
+ <div class="p-3 bg-gray-50 border border-[#ebebeb] rounded-xl peer-checked:border-brand-500 peer-checked:ring-1 peer-checked:ring-brand-500 transition opacity-60 peer-checked:opacity-100">
  <div class="h-2 w-full bg-slate-700 rounded mb-1 flex items-center justify-between px-1">
  <div class="w-2 h-1 bg-brand-500 rounded"></div>
  <div class="flex gap-0.5"><div class="w-2 h-0.5 bg-slate-500"></div><div class="w-2 h-0.5 bg-slate-500"></div></div>
@@ -115,7 +115,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  </label>
  <label class="relative cursor-pointer">
  <input type="radio" name="headerLayout" value="center" class="peer sr-only" checked={headerLayout === 'center'} onchange="triggerUpdate()" />
- <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl peer-checked:border-brand-500 peer-checked:ring-1 peer-checked:ring-brand-500 transition opacity-60 peer-checked:opacity-100">
+ <div class="p-3 bg-gray-50 border border-[#ebebeb] rounded-xl peer-checked:border-brand-500 peer-checked:ring-1 peer-checked:ring-brand-500 transition opacity-60 peer-checked:opacity-100">
  <div class="h-2 w-full bg-slate-700 rounded mb-1 flex items-center justify-center">
  <div class="w-2 h-1 bg-brand-500 rounded"></div>
  </div>
@@ -134,7 +134,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  <div class="grid grid-cols-2 gap-3">
  <label class="relative cursor-pointer">
  <input type="radio" name="footerLayout" value="simple" class="peer sr-only" checked={footerLayout === 'simple'} onchange="triggerUpdate()" />
- <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl peer-checked:border-brand-500 peer-checked:ring-1 peer-checked:ring-brand-500 transition opacity-60 peer-checked:opacity-100">
+ <div class="p-3 bg-gray-50 border border-[#ebebeb] rounded-xl peer-checked:border-brand-500 peer-checked:ring-1 peer-checked:ring-brand-500 transition opacity-60 peer-checked:opacity-100">
  <div class="h-4 w-full bg-slate-700 rounded flex flex-col items-center justify-center gap-0.5">
  <div class="w-4 h-0.5 bg-slate-500 rounded"></div>
  </div>
@@ -143,7 +143,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  </label>
  <label class="relative cursor-pointer">
  <input type="radio" name="footerLayout" value="columns" class="peer sr-only" checked={footerLayout === 'columns'} onchange="triggerUpdate()" />
- <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl peer-checked:border-brand-500 peer-checked:ring-1 peer-checked:ring-brand-500 transition opacity-60 peer-checked:opacity-100">
+ <div class="p-3 bg-gray-50 border border-[#ebebeb] rounded-xl peer-checked:border-brand-500 peer-checked:ring-1 peer-checked:ring-brand-500 transition opacity-60 peer-checked:opacity-100">
  <div class="h-4 w-full bg-slate-700 rounded flex items-center justify-center gap-1 px-1">
  <div class="w-2 h-2 bg-slate-500 rounded-sm"></div>
  <div class="w-2 h-2 bg-slate-500 rounded-sm"></div>
@@ -164,7 +164,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  <textarea 
  name="customThemeHtml" 
  id="input-customThemeHtml"
- class="w-full h-80 bg-dark-950 border border-gray-200 rounded-xl p-4 text-emerald-400 font-mono text-xs focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition whitespace-pre overflow-x-auto custom-scrollbar"
+ class="w-full h-80 bg-dark-950 border border-[#ebebeb] rounded-xl p-4 text-emerald-400 text-xs focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition whitespace-pre overflow-x-auto custom-scrollbar"
  placeholder={`<!DOCTYPE html>\n<html lang="id">\n<head>\n <title>{{title}}</title>\n <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n <script src="https://cdn.tailwindcss.com"></script>\n <style>\n :root { --primary: {{primaryColor}}; }\n </style>\n</head>\n<body>\n <header>\n <h1>{{siteName}}</h1>\n </header>\n <main>\n {{content}}\n </main>\n <footer>\n &copy; 2026 {{siteName}}\n </footer>\n</body>\n</html>`}
  oninput="triggerUpdate()"
  >{settings['customThemeHtml'] || ''}</textarea>
@@ -174,7 +174,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  </div>
  </div>
 
- <div class="p-4 bg-gray-50 border-t border-gray-200 shrink-0">
+ <div class="p-4 bg-gray-50 border-t border-[#ebebeb] shrink-0">
  <button type="submit" id="save-btn" class="w-full bg-brand-600 hover:bg-brand-500 text-gray-900 py-3 rounded-xl font-medium text-sm transition shadow-lg shadow-brand-500/20 flex justify-center items-center gap-2">
  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
  Publikasikan Perubahan
@@ -184,14 +184,14 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  </div>
 
  {/* Visual Preview Area (DOM Iframe-like) */}
- <div class="bg-gray-50 border border-gray-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col min-h-[600px]">
- <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200 shrink-0">
+ <div class="bg-gray-50 border border-[#ebebeb] rounded-2xl shadow-2xl overflow-hidden flex flex-col min-h-[600px]">
+ <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-[#ebebeb] shrink-0">
  <div class="flex gap-1.5">
  <div class="w-3 h-3 rounded-full bg-slate-600"></div>
  <div class="w-3 h-3 rounded-full bg-slate-600"></div>
  <div class="w-3 h-3 rounded-full bg-slate-600"></div>
  </div>
- <div class="px-8 py-1.5 bg-gray-50 text-gray-500 text-xs font-mono rounded-lg border border-gray-200 flex items-center gap-2">
+ <div class="px-8 py-1.5 bg-gray-50 text-gray-500 text-xs rounded-lg border border-[#ebebeb] flex items-center gap-2">
  <svg class="w-3 h-3 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
  Pratinjau Langsung (Desktop)
  </div>
@@ -225,7 +225,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  <h1 class="text-5xl md:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight relative z-10 leading-tight">Selamat Datang di <br/>{siteName}</h1>
  <p class="text-lg text-gray-400 max-w-xl mb-10 relative z-10 leading-relaxed">Sistem manajemen konten kelas dunia yang memungkinkan Anda membangun kehadiran digital tanpa batas dengan performa Edge-Native.</p>
  <div class="flex gap-4 relative z-10">
- <button class="px-8 py-3.5 rounded-full text-gray-900 font-medium shadow-xl hover:opacity-90 transition-all transform hover:-translate-y-1" style={`background-color: ${primaryColor}`} id="previewButton">
+ <button class="px-8 py-3.5 rounded-full text-gray-900 font-medium shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:opacity-90 transition-all transform hover:-translate-y-1" style={`background-color: ${primaryColor}`} id="previewButton">
  Mulai Eksplorasi
  </button>
  <button class="px-8 py-3.5 rounded-full font-medium transition-all" style={`color: ${primaryColor}; background-color: ${primaryColor}15`} id="previewButtonSecondary">

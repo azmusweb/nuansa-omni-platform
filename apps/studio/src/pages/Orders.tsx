@@ -32,7 +32,7 @@ export const Orders: FC<{ currentPath: string; orders: any[] }> = ({ currentPath
  ) : (
  orders.map((order) => (
  <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
- <td class="p-4 font-mono text-sm text-slate-600 ">{order.id.slice(0, 8)}...</td>
+ <td class="p-4 text-sm text-slate-600 ">{order.id.slice(0, 8)}...</td>
  <td class="p-4">
  <div class="font-medium text-slate-900 ">{order.customer_name}</div>
  <div class="text-sm text-gray-400 ">{order.customer_phone}</div>

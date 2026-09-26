@@ -9,7 +9,7 @@ export const Products: FC<{ currentPath: string, products: Product[] }> = ({ cur
  <Layout title="Katalog Produk" currentPath={currentPath}>
  <div class="max-w-6xl mx-auto space-y-8">
  
- <div class="flex justify-between items-center bg-white backdrop-blur p-6 rounded-2xl border border-gray-200 shadow-lg">
+ <div class="flex justify-between items-center bg-white backdrop-blur p-6 rounded-2xl border border-[#ebebeb] shadow-lg">
  <div>
  <h2 class="text-2xl font-bold text-gray-900 mb-2">Manajemen Katalog</h2>
  <p class="text-gray-500">Kelola produk fisik, digital, atau layanan langganan Anda.</p>
@@ -22,7 +22,7 @@ export const Products: FC<{ currentPath: string, products: Product[] }> = ({ cur
 
  {/* Modal Tambah Produk (Sederhana) */}
  <div id="add-product-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
- <div class="bg-gray-50 w-full max-w-lg rounded-2xl border border-gray-200 shadow-2xl p-6 relative">
+ <div class="bg-gray-50 w-full max-w-lg rounded-2xl border border-[#ebebeb] shadow-2xl p-6 relative">
  <button onclick="document.getElementById('add-product-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-900">
  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
  </button>
@@ -30,20 +30,20 @@ export const Products: FC<{ currentPath: string, products: Product[] }> = ({ cur
  <form action="/api/products" method="POST" class="space-y-4">
  <div>
  <label class="block text-sm font-medium text-gray-700 mb-1">Nama Produk</label>
- <input type="text" name="name" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand-500 transition" placeholder="Contoh: Tiket Webinar Premium" />
+ <input type="text" name="name" required class="w-full bg-white border border-[#ebebeb] rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand-500 transition" placeholder="Contoh: Tiket Webinar Premium" />
  </div>
  <div>
  <label class="block text-sm font-medium text-gray-700 mb-1">Harga (Rp)</label>
- <input type="number" name="price" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand-500 transition" placeholder="Contoh: 150000" />
+ <input type="number" name="price" required class="w-full bg-white border border-[#ebebeb] rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand-500 transition" placeholder="Contoh: 150000" />
  </div>
  <div>
  <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Singkat</label>
- <textarea name="description" rows="3" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand-500 transition" placeholder="Jelaskan nilai jual produk Anda..."></textarea>
+ <textarea name="description" rows="3" class="w-full bg-white border border-[#ebebeb] rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand-500 transition" placeholder="Jelaskan nilai jual produk Anda..."></textarea>
  </div>
  <div class="flex gap-4">
  <div class="flex-1">
  <label class="block text-sm font-medium text-gray-700 mb-1">Stok (Opsional)</label>
- <input type="number" name="stock" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand-500 transition" placeholder="Biarkan kosong jika tak terbatas" />
+ <input type="number" name="stock" class="w-full bg-white border border-[#ebebeb] rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand-500 transition" placeholder="Biarkan kosong jika tak terbatas" />
  </div>
  </div>
  <div class="pt-4">
@@ -57,7 +57,7 @@ export const Products: FC<{ currentPath: string, products: Product[] }> = ({ cur
 
  {/* Grid Produk */}
  {products.length === 0 ? (
- <div class="text-center py-20 bg-white rounded-2xl border border-gray-200 border-dashed">
+ <div class="text-center py-20 bg-white rounded-2xl border border-[#ebebeb] border-dashed">
  <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
  <svg class="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
  </div>
@@ -67,7 +67,7 @@ export const Products: FC<{ currentPath: string, products: Product[] }> = ({ cur
  ) : (
  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
  {products.map((p) => (
- <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-gray-200 transition group shadow-lg">
+ <div class="bg-white border border-[#ebebeb] rounded-2xl overflow-hidden hover:border-[#ebebeb] transition group shadow-lg">
  <div class="h-48 bg-gray-100 flex items-center justify-center relative overflow-hidden">
  {p.imageUrl ? (
  <img src={p.imageUrl} alt={p.name} class="w-full h-full object-cover" />

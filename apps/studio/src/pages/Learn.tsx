@@ -38,7 +38,7 @@ export const Learn: FC<{ currentPath: string; courses: Course[] }> = ({ currentP
  ) : (
  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
  {courses.map((course) => (
- <div class="bg-white shadow-sm rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1">
+ <div class="bg-white shadow-sm rounded-2xl border border-slate-200 overflow-hidden hover:shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition-all hover:-translate-y-1">
  <div class="h-40 bg-gradient-to-br from-indigo-500 to-purple-600 relative overflow-hidden">
  {course.cover_image ? (
  <img src={course.cover_image} alt={course.title} class="w-full h-full object-cover" />

@@ -6,8 +6,8 @@ export const Tools: FC<{ currentPath: string }> = ({ currentPath }) => {
  <Layout title="Alat & Impor" currentPath={currentPath}>
  <div class="max-w-4xl mx-auto space-y-8">
  
- <div class="bg-white backdrop-blur-sm border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
- <div class="p-6 border-b border-gray-200">
+ <div class="bg-white backdrop-blur-sm border border-[#ebebeb] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden">
+ <div class="p-6 border-b border-[#ebebeb]">
  <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
  <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
  1-Click WordPress Importer
@@ -18,15 +18,15 @@ export const Tools: FC<{ currentPath: string }> = ({ currentPath }) => {
  <div class="p-8">
  <form action="/api/import-wp" method="POST" enctype="multipart/form-data" class="space-y-6">
  
- <div class="border-2 border-dashed border-gray-200 rounded-xl p-10 text-center hover:border-brand-500 transition cursor-pointer bg-gray-50" onclick="document.getElementById('wp-xml').click()">
+ <div class="border-2 border-dashed border-[#ebebeb] rounded-xl p-10 text-center hover:border-brand-500 transition cursor-pointer bg-gray-50" onclick="document.getElementById('wp-xml').click()">
  <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
  <h3 class="text-gray-700 font-medium mb-1">Pilih File XML WordPress (.xml)</h3>
  <p class="text-gray-400 text-sm">Ukuran maksimal yang disarankan: 10MB</p>
  <input type="file" id="wp-xml" name="file" accept=".xml" class="hidden" onchange="document.getElementById('file-name').innerText = this.files[0] ? this.files[0].name : ''" />
- <p id="file-name" class="mt-4 text-brand-600 font-mono text-sm"></p>
+ <p id="file-name" class="mt-4 text-brand-600 text-sm"></p>
  </div>
  
- <div class="bg-brand-500/10 border border-gray-200 rounded-xl p-4 flex gap-3 text-sm">
+ <div class="bg-brand-500/10 border border-[#ebebeb] rounded-xl p-4 flex gap-3 text-sm">
  <svg class="w-5 h-5 text-brand-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
  <div class="text-gray-700">
  <p class="font-semibold text-brand-600 mb-1">Informasi Impor</p>

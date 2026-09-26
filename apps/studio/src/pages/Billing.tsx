@@ -8,11 +8,11 @@ export const Billing: FC<{ currentPath: string, plan: string, transactions: any[
  
  {/* Kolom Paket & Upgrade */}
  <div class="col-span-1 lg:col-span-2 space-y-6">
- <div class="bg-white border border-gray-200 rounded-2xl shadow-xl p-8">
+ <div class="bg-white border border-[#ebebeb] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] p-8">
  <h2 class="text-2xl font-bold text-gray-900 mb-2">Paket Langganan Anda</h2>
  <p class="text-gray-500 mb-6">Kelola paket, perbarui lisensi, dan beli fitur tambahan.</p>
  
- <div class="flex items-center gap-4 p-4 bg-gray-50 border border-gray-200 rounded-xl mb-8">
+ <div class="flex items-center gap-4 p-4 bg-gray-50 border border-[#ebebeb] rounded-xl mb-8">
  <div class="w-12 h-12 rounded-full bg-brand-500/20 text-brand-600 flex items-center justify-center font-bold uppercase">
  {plan[0]}
  </div>
@@ -24,7 +24,7 @@ export const Billing: FC<{ currentPath: string, plan: string, transactions: any[
 
  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
  {/* Kartu Upgrade Pro */}
- <div class="border border-gray-200 rounded-xl p-5 hover:border-brand-500 transition relative overflow-hidden group">
+ <div class="border border-[#ebebeb] rounded-xl p-5 hover:border-brand-500 transition relative overflow-hidden group">
  <div class="absolute inset-0 bg-gradient-to-br from-brand-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition"></div>
  <h3 class="text-lg font-bold text-gray-900 mb-1">Paket Pro</h3>
  <p class="text-xl font-bold text-brand-600 mb-4">Rp 199.000<span class="text-sm font-normal text-gray-400">/bln</span></p>
@@ -43,7 +43,7 @@ export const Billing: FC<{ currentPath: string, plan: string, transactions: any[
  </div>
 
  {/* Kartu Upgrade Enterprise */}
- <div class="border border-gray-200 bg-brand-500/5 rounded-xl p-5 hover:border-brand-500 transition relative overflow-hidden group">
+ <div class="border border-[#ebebeb] bg-brand-500/5 rounded-xl p-5 hover:border-brand-500 transition relative overflow-hidden group">
  <div class="absolute top-0 right-0 bg-brand-500 text-gray-900 text-[10px] font-bold px-2 py-1 rounded-bl-lg">TERPOPULER</div>
  <h3 class="text-lg font-bold text-gray-900 mb-1">Enterprise</h3>
  <p class="text-xl font-bold text-brand-600 mb-4">Rp 499.000<span class="text-sm font-normal text-gray-400">/bln</span></p>
@@ -66,8 +66,8 @@ export const Billing: FC<{ currentPath: string, plan: string, transactions: any[
 
  {/* Kolom Riwayat Transaksi */}
  <div class="col-span-1 space-y-6">
- <div class="bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
- <div class="p-5 border-b border-gray-200 bg-gray-50">
+ <div class="bg-white border border-[#ebebeb] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden">
+ <div class="p-5 border-b border-[#ebebeb] bg-gray-50">
  <h3 class="font-semibold text-gray-900">Status Permintaan</h3>
  </div>
  <div class="p-0">
@@ -83,7 +83,7 @@ export const Billing: FC<{ currentPath: string, plan: string, transactions: any[
  {tx.status === 'approved' && <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase">Disetujui</span>}
  {tx.status === 'rejected' && <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30 uppercase">Ditolak</span>}
  </div>
- <span class="text-xs text-gray-500 font-mono">ID: {tx.id.split('-')[0]}</span>
+ <span class="text-xs text-gray-500 ">ID: {tx.id.split('-')[0]}</span>
  {tx.details && (
  <span class="text-xs text-gray-400">{JSON.parse(tx.details).target_plan?.toUpperCase()}</span>
  )}

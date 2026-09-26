@@ -15,7 +15,7 @@ export const Audit: FC<{ currentPath: string }> = ({ currentPath }) => {
  
  {/* Header Widget */}
  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
- <div class="bg-white backdrop-blur border border-gray-200 p-6 rounded-2xl flex items-center justify-between shadow-lg">
+ <div class="bg-white backdrop-blur border border-[#ebebeb] p-6 rounded-2xl flex items-center justify-between shadow-lg">
  <div>
  <p class="text-sm text-gray-500 font-medium mb-1">Status Keamanan</p>
  <h3 class="text-2xl font-bold text-emerald-400">Aman</h3>
@@ -24,16 +24,16 @@ export const Audit: FC<{ currentPath: string }> = ({ currentPath }) => {
  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
  </div>
  </div>
- <div class="bg-white backdrop-blur border border-gray-200 p-6 rounded-2xl flex items-center justify-between shadow-lg">
+ <div class="bg-white backdrop-blur border border-[#ebebeb] p-6 rounded-2xl flex items-center justify-between shadow-lg">
  <div>
  <p class="text-sm text-gray-500 font-medium mb-1">Ancaman Diblokir (30 Hari)</p>
  <h3 class="text-2xl font-bold text-gray-900">124</h3>
  </div>
- <div class="w-12 h-12 bg-brand-500/10 rounded-xl flex items-center justify-center border border-gray-200 text-brand-600">
+ <div class="w-12 h-12 bg-brand-500/10 rounded-xl flex items-center justify-center border border-[#ebebeb] text-brand-600">
  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
  </div>
  </div>
- <div class="bg-white backdrop-blur border border-gray-200 p-6 rounded-2xl flex items-center justify-between shadow-lg">
+ <div class="bg-white backdrop-blur border border-[#ebebeb] p-6 rounded-2xl flex items-center justify-between shadow-lg">
  <div>
  <p class="text-sm text-gray-500 font-medium mb-1">Sesi Aktif</p>
  <h3 class="text-2xl font-bold text-gray-900">1</h3>
@@ -45,14 +45,14 @@ export const Audit: FC<{ currentPath: string }> = ({ currentPath }) => {
  </div>
 
  {/* Audit Log Table */}
- <div class="bg-white backdrop-blur-sm border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
- <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+ <div class="bg-white backdrop-blur-sm border border-[#ebebeb] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden">
+ <div class="p-6 border-b border-[#ebebeb] flex justify-between items-center">
  <h2 class="text-lg font-semibold text-gray-900">Log Aktivitas (Audit Trail)</h2>
  <button class="text-sm text-brand-600 font-medium hover:text-brand-300 transition">Ekspor CSV</button>
  </div>
  <table class="w-full text-left border-collapse">
  <thead>
- <tr class="border-b border-gray-200 text-gray-500 text-sm">
+ <tr class="border-b border-[#ebebeb] text-gray-500 text-sm">
  <th class="p-4 font-medium pl-6">Tanggal & Waktu</th>
  <th class="p-4 font-medium">Aksi</th>
  <th class="p-4 font-medium">Pengguna</th>
@@ -63,10 +63,10 @@ export const Audit: FC<{ currentPath: string }> = ({ currentPath }) => {
  <tbody class="text-sm divide-y divide-slate-700/50">
  {auditLogs.map((log) => (
  <tr class="hover:bg-gray-100 transition">
- <td class="p-4 pl-6 text-gray-500 font-mono text-xs">{new Date(log.date).toLocaleString('id-ID')}</td>
+ <td class="p-4 pl-6 text-gray-500 text-xs">{new Date(log.date).toLocaleString('id-ID')}</td>
  <td class="p-4 text-gray-900 font-medium">{log.action}</td>
  <td class="p-4 text-gray-700">{log.user}</td>
- <td class="p-4 text-gray-500 font-mono text-xs">{log.ip}</td>
+ <td class="p-4 text-gray-500 text-xs">{log.ip}</td>
  <td class="p-4">
  <span class={`px-2 py-1 rounded-full text-xs font-medium border ${log.status === 'Success' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
  {log.status}

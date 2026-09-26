@@ -106,7 +106,7 @@ export const Lessons: FC<{ currentPath: string; course: Course; lessons: Lesson[
  </div>
  <div>
  <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Konten Materi</label>
- <textarea name="content" id="lesson-content" rows={12} placeholder="Tulis konten materi di sini (mendukung HTML)..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-brand-500 transition font-mono resize-none"></textarea>
+ <textarea name="content" id="lesson-content" rows={12} placeholder="Tulis konten materi di sini (mendukung HTML)..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-brand-500 transition resize-none"></textarea>
  </div>
  <div class="flex gap-3 pt-1">
  <button type="button" onclick="closeLessonModal()" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition text-sm font-medium">Batal</button>

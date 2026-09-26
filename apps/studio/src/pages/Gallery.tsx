@@ -16,7 +16,7 @@ export const Gallery: FC<{ currentPath: string }> = ({ currentPath }) => {
  </div>
 
  {/* Tab Navigasi */}
- <div class="flex gap-4 border-b border-gray-200">
+ <div class="flex gap-4 border-b border-[#ebebeb]">
  <button class="px-4 py-3 text-brand-600 border-b-2 border-brand-500 font-medium text-sm">Tema Tersimpan</button>
  <button class="px-4 py-3 text-gray-500 hover:text-gray-900 transition font-medium text-sm">Tema Dibeli</button>
  </div>
@@ -25,8 +25,8 @@ export const Gallery: FC<{ currentPath: string }> = ({ currentPath }) => {
  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
  
  {/* Card Tema 1 */}
- <div class="bg-white backdrop-blur-sm border border-gray-200 rounded-2xl overflow-hidden shadow-xl group">
- <div class="aspect-video bg-gray-50 border-b border-gray-200 relative overflow-hidden">
+ <div class="bg-white backdrop-blur-sm border border-[#ebebeb] rounded-2xl overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.04)] group">
+ <div class="aspect-video bg-gray-50 border-b border-[#ebebeb] relative overflow-hidden">
  <div class="absolute inset-0 bg-gradient-to-br from-brand-500/20 to-purple-500/20"></div>
  <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-dark-950/60 backdrop-blur-sm">
  <button class="px-6 py-2 bg-brand-600 text-gray-900 rounded-full font-medium text-sm hover:scale-105 transition-transform">Gunakan Tema</button>
@@ -42,8 +42,8 @@ export const Gallery: FC<{ currentPath: string }> = ({ currentPath }) => {
  </div>
 
  {/* Card Tema 2 */}
- <div class="bg-white backdrop-blur-sm border border-gray-200 rounded-2xl overflow-hidden shadow-xl group">
- <div class="aspect-video bg-gray-50 border-b border-gray-200 relative overflow-hidden">
+ <div class="bg-white backdrop-blur-sm border border-[#ebebeb] rounded-2xl overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.04)] group">
+ <div class="aspect-video bg-gray-50 border-b border-[#ebebeb] relative overflow-hidden">
  <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-teal-500/20"></div>
  <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-dark-950/60 backdrop-blur-sm">
  <button class="px-6 py-2 bg-brand-600 text-gray-900 rounded-full font-medium text-sm hover:scale-105 transition-transform">Gunakan Tema</button>

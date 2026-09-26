@@ -61,7 +61,7 @@ export const WritePost: FC<{ currentPath: string, post?: any }> = ({ currentPath
  Pratinjau
  </button>
  
- <button type="button" id="save-btn" onclick="submitPost()" class="bg-brand-600 hover:bg-brand-500 active:scale-95 text-gray-900 px-5 py-1.5 rounded font-medium text-sm transition shadow-sm flex items-center gap-2">
+ <button type="button" id="save-btn" onclick="submitPost()" class="bg-brand-600 hover:bg-brand-500 active:scale-95 text-[#161616] px-5 py-1.5 rounded font-medium text-sm transition shadow-sm flex items-center gap-2">
  <svg class="w-4 h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
  <span id="save-btn-text">{isEditing ? 'Perbarui' : 'Publikasikan'}</span>
  </button>
@@ -119,7 +119,7 @@ export const WritePost: FC<{ currentPath: string, post?: any }> = ({ currentPath
  <div id="image-body" class="px-4 pb-4 section-collapsed">
  <div id="img-preview-box" class="hidden mb-3 rounded overflow-hidden border border-slate-200 aspect-video bg-slate-100 relative">
  <img id="img-preview" src="" alt="Preview" class="w-full h-full object-cover" />
- <button type="button" onclick="clearImageUrl()" class="absolute top-1.5 right-1.5 w-6 h-6 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center transition text-gray-900 text-xs">✕</button>
+ <button type="button" onclick="clearImageUrl()" class="absolute top-1.5 right-1.5 w-6 h-6 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center transition text-[#161616] text-xs">✕</button>
  </div>
  <input type="text" id="meta-image" placeholder="URL gambar..." class="w-full bg-transparent border-b border-slate-300 px-0 py-1.5 text-sm text-slate-800 focus:border-brand-500 focus:outline-none transition placeholder-slate-400" oninput="debounceImagePreview(this.value)" />
  </div>
