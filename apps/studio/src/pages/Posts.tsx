@@ -14,301 +14,143 @@ type Post = {
 }
 
 export const Posts: FC<{ currentPath: string, posts?: Post[] }> = ({ currentPath, posts = [] }) => {
-  return (
-    <Layout title="Manajemen Konten (Nodes)" currentPath={currentPath}>
-      {/* EditorJS Dependencies */}
-      <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
-      <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-      <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+  const countAll = posts.length;
+  const countPublished = posts.filter(p => p.status === 'published').length;
+  const countDraft = posts.filter(p => p.status === 'draft').length;
+  const countPending = posts.filter(p => p.status === 'pending').length;
 
-      <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center gap-4 bg-dark-800/80 border border-brand-500/20 rounded-xl px-4 py-2 w-96 focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500 transition">
-          <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-          <input type="text" placeholder="Cari artikel..." class="bg-transparent border-none outline-none text-sm text-white w-full placeholder-slate-500 font-mono" />
+  return (
+    <Layout title="Postingan" currentPath={currentPath}>
+
+      {/* Action Bar (Top) */}
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 relative z-20">
+        
+        {/* Filter and Search Container */}
+        <div class="flex items-center gap-2 bg-white dark:bg-dark-800 border border-slate-300 dark:border-brand-500/20 rounded-xl px-4 py-2 flex-1 sm:max-w-xl focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500 transition shadow-sm">
+          <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          
+          <input type="text" id="search-posts" oninput="applyFilters()" placeholder="Telusuri postingan" class="bg-transparent border-none outline-none text-sm text-slate-800 dark:text-white w-full placeholder-slate-400 dark:placeholder-slate-500 px-2" />
+          
+          <div class="relative group">
+            <button type="button" class="flex items-center gap-1 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+            </button>
+            
+            {/* Dropdown menu */}
+            <div class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-dark-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30 py-1">
+              <button onclick="setFilterStatus('all')" class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">Semua ({countAll})</button>
+              <button onclick="setFilterStatus('published')" class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">Dipublikasikan ({countPublished})</button>
+              <button onclick="setFilterStatus('draft')" class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">Draf ({countDraft})</button>
+              <button onclick="setFilterStatus('pending')" class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">Menunggu Tinjauan ({countPending})</button>
+            </div>
+          </div>
         </div>
-        <button onclick="openModal()" class="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition shadow-lg shadow-brand-500/20 flex items-center gap-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-          Tulis Artikel Baru
-        </button>
+
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-brand-600 dark:text-brand-400 font-semibold uppercase tracking-wide px-2 cursor-pointer hover:opacity-80">Kelola</span>
+          <a href="/posts/new" class="bg-brand-600 hover:bg-brand-500 active:scale-95 text-white px-5 py-2.5 rounded-full font-semibold text-sm transition shadow-md flex items-center justify-center gap-2 shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            POSTINGAN BARU
+          </a>
+        </div>
       </div>
 
-      <div class="bg-dark-800/50 backdrop-blur-sm border border-brand-500/20 rounded-2xl shadow-xl overflow-hidden">
+      <input type="hidden" id="current-status-filter" value="all" />
+
+      {/* Posts List */}
+      <div class="bg-white dark:bg-dark-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm">
         {posts.length === 0 ? (
           <div class="p-12 text-center text-slate-400">
-            <svg class="w-12 h-12 mx-auto text-brand-500/50 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            <p class="font-mono">Belum ada artikel. Klik "Tulis Artikel Baru" untuk memulai.</p>
+            <svg class="w-16 h-16 mx-auto text-slate-300 dark:text-slate-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+            <p class="text-sm font-medium">Belum ada postingan.</p>
           </div>
         ) : (
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-brand-500/20 text-brand-400 text-sm font-mono uppercase tracking-wider">
-                <th class="p-4 font-medium pl-6">Judul Artikel</th>
-                <th class="p-4 font-medium">Status</th>
-                <th class="p-4 font-medium">Tipe</th>
-                <th class="p-4 font-medium">Dibuat Pada</th>
-                <th class="p-4 font-medium text-right pr-6">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="text-sm divide-y divide-brand-500/10">
-              {posts.map((post) => (
-                <tr class="hover:bg-brand-500/5 transition">
-                  <td class="p-4 pl-6 text-white font-medium">{post.title}</td>
-                  <td class="p-4">
-                    <span class={`px-3 py-1 rounded-full text-xs font-medium border 
-                      ${post.status === 'draft' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 
-                        post.status === 'pending' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 
-                        'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
-                      {post.status.toUpperCase()}
-                    </span>
-                  </td>
-                  <td class="p-4 font-medium text-xs">
+          <div class="divide-y divide-slate-100 dark:divide-slate-700/50">
+            {posts.map((post) => (
+              <div class="post-row group flex flex-col sm:flex-row sm:items-center p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition relative" data-title={post.title.toLowerCase()} data-status={post.status}>
+                
+                {/* Checkbox (visual only for now) & Thumbnail */}
+                <div class="flex items-center gap-4 mb-3 sm:mb-0 sm:w-1/4 shrink-0">
+                  <div class="w-4 h-4 rounded border border-slate-300 dark:border-slate-600 flex-shrink-0 cursor-pointer hidden sm:block"></div>
+                  
+                  {/* Thumbnail Placeholder ('T' icon) */}
+                  <div class="w-12 h-12 bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 rounded flex items-center justify-center font-serif text-2xl border border-slate-200 dark:border-slate-600 flex-shrink-0">
+                    T
+                  </div>
+                </div>
+
+                {/* Main Content (Title, Status, Date) */}
+                <div class="flex-1 min-w-0 pr-4">
+                  <a href={`/posts/edit/${post.id}`} class="text-slate-800 dark:text-white font-medium text-base hover:text-brand-600 dark:hover:text-brand-400 truncate block">
+                    {post.title || '(Tanpa judul)'}
+                  </a>
+                  <div class="flex items-center gap-2 mt-1 text-xs">
+                    {post.status === 'draft' && <span class="text-amber-600 dark:text-amber-500 font-medium">Draf</span>}
+                    {post.status === 'pending' && <span class="text-blue-600 dark:text-blue-500 font-medium">Tinjauan</span>}
+                    <span class="text-slate-500">• {new Date(post.created_at).toLocaleDateString('id-ID', {day:'numeric', month:'short'})}</span>
                     {post.is_premium ? (
-                      <span class="text-amber-400 flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                        Premium
-                      </span>
-                    ) : (
-                      <span class="text-slate-400">Gratis</span>
-                    )}
-                  </td>
-                  <td class="p-4 text-slate-400">{new Date(post.created_at).toLocaleDateString('id-ID')}</td>
-                  <td class="p-4 text-right pr-6">
-                    <button 
-                      onclick={`openModal('${post.id}', '${post.title.replace(/'/g, "\\'")}', '${encodeURIComponent(post.content || '')}', '${encodeURIComponent((post as any).metadata || '')}', '${post.status}', ${post.is_premium ? 1 : 0}, ${post.price || 0})`}
-                      class="text-brand-400 hover:text-brand-300 font-medium text-sm transition mr-3">
-                      Edit
-                    </button>
-                    <form action="/api/posts" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus artikel ini?')">
-                      <input type="hidden" name="id" value={post.id} />
-                      <input type="hidden" name="action" value="delete" />
-                      <button type="submit" class="text-red-400 hover:text-red-300 font-medium text-sm transition">Hapus</button>
-                    </form>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      <span class="text-amber-500 ml-2">🔒 Premium</span>
+                    ) : null}
+                  </div>
+                </div>
+
+                {/* Right Side (Author & Actions) */}
+                <div class="flex items-center justify-between sm:justify-end gap-6 sm:w-1/4 shrink-0 mt-3 sm:mt-0">
+                  <div class="flex items-center gap-2">
+                    {/* Placeholder Avatar */}
+                    <div class="w-6 h-6 rounded-full bg-slate-300 dark:bg-slate-600 overflow-hidden flex-shrink-0">
+                      <svg class="w-full h-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    </div>
+                    <span class="text-xs text-slate-600 dark:text-slate-400 truncate max-w-[80px]">Admin</span>
+                  </div>
+
+                  {/* Hover Actions */}
+                  <div class="flex items-center gap-3 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                     <a href={`/posts/edit/${post.id}`} title="Edit" class="text-slate-400 hover:text-brand-500 transition">
+                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                     </a>
+                     <form action="/api/posts" method="POST" class="inline m-0 p-0 h-5" onsubmit="return confirm('Yakin ingin menghapus postingan ini?')">
+                        <input type="hidden" name="id" value={post.id} />
+                        <input type="hidden" name="action" value="delete" />
+                        <button type="submit" title="Hapus" class="text-slate-400 hover:text-red-500 transition focus:outline-none">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                     </form>
+                  </div>
+                </div>
+
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
-      {/* Modal Tulis/Edit Artikel */}
-      <div id="new-post-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-dark-900 border border-slate-700 rounded-2xl w-full max-w-6xl overflow-hidden shadow-2xl flex flex-col max-h-[95vh]">
-          <div class="flex justify-between items-center p-4 border-b border-slate-800 shrink-0">
-            <h3 id="modal-title" class="text-white font-semibold text-lg">Tulis Artikel Baru</h3>
-            <button onclick="closeModal()" class="text-slate-400 hover:text-white">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-          </div>
-          
-          <form id="post-form" action="/api/posts" method="POST" class="flex flex-col flex-grow overflow-hidden" onsubmit="event.preventDefault(); submitPost();">
-            <div class="p-6 overflow-y-auto flex-grow flex flex-col lg:flex-row gap-6">
-              
-              {/* Kolom Kiri: Editor */}
-              <div class="flex-grow flex flex-col">
-                <input type="hidden" name="id" id="post-id" />
-                <input type="hidden" name="action" value="save" />
-                <input type="hidden" name="content" id="post-content" />
-                <input type="hidden" name="metadata" id="post-metadata" />
-                
-                <div class="mb-6">
-                  <input type="text" id="post-title" name="title" required placeholder="Judul Artikel..." class="w-full bg-transparent border-none px-0 py-2 text-white text-4xl font-bold focus:outline-none placeholder-slate-600" />
-                </div>
-                
-                <div class="bg-white rounded-xl text-black shadow-inner overflow-y-auto border border-slate-300 flex-grow relative">
-                   <div id="editorjs" class="min-h-[400px] p-6 text-base max-w-none"></div>
-                </div>
-              </div>
-              
-              {/* Kolom Kanan: Sidebar */}
-              <div class="w-full lg:w-80 shrink-0 space-y-6 flex flex-col">
-                <div>
-                  <label class="block text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Nuansa Flow (Status)</label>
-                  <select name="status" id="post-status" class="w-full bg-dark-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition shadow-inner">
-                    <option value="draft">Draft (Konsep)</option>
-                    <option value="pending">Menunggu Tinjauan</option>
-                    <option value="published">Published (Publikasi)</option>
-                  </select>
-                </div>
-                
-                {/* Nuansa Fields: Custom Meta */}
-                <div class="bg-dark-800/50 rounded-xl border border-slate-700/50 overflow-hidden">
-                  <div class="px-4 py-3 border-b border-slate-700/50 bg-dark-800 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-                    <h4 class="text-slate-300 text-sm font-semibold">Nuansa Fields (Meta)</h4>
-                  </div>
-                  
-                  <div class="p-4 space-y-4">
-                    <div>
-                      <label class="block text-brand-400 font-mono text-xs font-medium mb-1 uppercase tracking-wider">SEO Title (Opsional)</label>
-                      <input type="text" id="meta-title" placeholder="Kustom SEO Title..." class="w-full bg-dark-900 border border-brand-500/30 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none transition" />
-                    </div>
-                    <div>
-                      <label class="block text-slate-400 text-xs font-medium mb-1">Meta Description</label>
-                      <textarea id="meta-desc" rows={3} placeholder="Deskripsi singkat untuk mesin pencari..." class="w-full bg-dark-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none transition resize-none"></textarea>
-                    </div>
-                    <div>
-                      <label class="block text-slate-400 text-xs font-medium mb-1">Featured Image URL</label>
-                      <div class="flex gap-2">
-                        <input type="text" id="meta-image" placeholder="https://... atau /images/..." class="flex-1 bg-dark-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none transition" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Monetization: Content Locker */}
-                <div class="bg-dark-800/50 rounded-xl border border-slate-700/50 overflow-hidden">
-                  <div class="px-4 py-3 border-b border-slate-700/50 bg-dark-800 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                    <h4 class="text-slate-300 text-sm font-semibold">Content Locker</h4>
-                  </div>
-                  <div class="p-4 space-y-4">
-                    <label class="flex items-center gap-3 cursor-pointer">
-                      <div class="relative">
-                        <input type="checkbox" id="post-is-premium" value="1" name="is_premium" class="sr-only peer" onchange="document.getElementById('price-container').classList.toggle('hidden', !this.checked)" />
-                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-500"></div>
-                      </div>
-                      <span class="text-sm font-medium text-slate-300">Jadikan Premium</span>
-                    </label>
-                    <div id="price-container" class="hidden">
-                      <label class="block text-slate-400 text-xs font-medium mb-1">Harga (Rp)</label>
-                      <input type="number" id="post-price" name="price" placeholder="5000" class="w-full bg-dark-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none transition" />
-                    </div>
-                  </div>
-                </div>
-
-                <div class="bg-dark-800/30 p-4 rounded-xl border border-slate-700/30">
-                   <h4 class="text-slate-400 text-xs font-medium mb-2 flex items-center gap-2">
-                     <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                     Bantuan Editor
-                   </h4>
-                   <ul class="text-slate-500 text-xs space-y-2 mt-2">
-                     <li>Tekan <kbd class="bg-slate-700 px-1 py-0.5 rounded text-[10px]">Tab</kbd> untuk menu block.</li>
-                     <li>Blok teks untuk menebalkan, miring, atau link.</li>
-                   </ul>
-                </div>
-              </div>
-            </div>
-            
-            <div class="p-4 border-t border-slate-800 shrink-0 flex justify-end gap-3 bg-dark-900">
-              <button type="button" onclick="closeModal()" class="px-5 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 transition">Batal</button>
-              <button type="submit" id="save-btn" class="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-xl font-medium text-sm transition shadow-lg shadow-brand-500/20 flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                Simpan ke Nodes
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-      
-      <style dangerouslySetInnerHTML={{__html: `
-        /* Overrides to make Editor.js look cleaner inside the white box */
-        .ce-block__content, .ce-toolbar__content { max-width: 100% !important; }
-        .codex-editor__redactor { padding-bottom: 50px !important; }
-        .ce-toolbar__actions { right: auto; left: -40px; }
-      `}} />
-
       <script dangerouslySetInnerHTML={{__html: `
-        let editor = null;
+        function setFilterStatus(status) {
+          document.getElementById('current-status-filter').value = status;
+          applyFilters();
+        }
 
-        function initEditor(data = null, encodedMetadata = null) {
-          if (editor) {
-            editor.destroy();
-          }
+        function applyFilters() {
+          var q = document.getElementById('search-posts').value.toLowerCase().trim();
+          var filterStatus = document.getElementById('current-status-filter').value;
           
-          let parsedData = {};
-          let metaData = { title: '', description: '', image: '' };
-
-          if (data) {
-             try {
-               parsedData = JSON.parse(decodeURIComponent(data));
-             } catch(e) {
-               console.error("Failed to parse existing content data", e);
-             }
-          }
-          if (encodedMetadata) {
-             try {
-               metaData = JSON.parse(decodeURIComponent(encodedMetadata));
-             } catch(e) {
-               console.error("Failed to parse existing metadata", e);
-             }
-          }
-
-          // Populate Nuansa Fields (Meta)
-          document.getElementById('meta-title').value = metaData.title || '';
-          document.getElementById('meta-desc').value = metaData.description || '';
-          document.getElementById('meta-image').value = metaData.image || '';
-
-          editor = new EditorJS({
-            holder: 'editorjs',
-            placeholder: 'Mulai menulis cerita Anda di sini...',
-            data: parsedData,
-            tools: {
-              header: Header,
-              list: List,
+          document.querySelectorAll('.post-row').forEach(function(row) {
+            var title = row.getAttribute('data-title') || '';
+            var rowStatus = row.getAttribute('data-status') || '';
+            
+            var matchSearch = q === '' || title.includes(q);
+            var matchStatus = filterStatus === 'all' || rowStatus === filterStatus;
+            
+            if (matchSearch && matchStatus) {
+              row.style.display = 'flex';
+            } else {
+              row.style.display = 'none';
             }
           });
-        }
-
-        function openModal(id = '', title = '', encodedContent = '', encodedMetadata = '', status = 'draft', is_premium = 0, price = 0) {
-          document.getElementById('modal-title').innerText = id ? 'Edit Artikel (Nodes)' : 'Tulis Artikel Baru';
-          document.getElementById('post-id').value = id;
-          document.getElementById('post-title').value = title;
-          document.getElementById('post-status').value = status;
-          
-          const premiumCheckbox = document.getElementById('post-is-premium');
-          const priceContainer = document.getElementById('price-container');
-          const priceInput = document.getElementById('post-price');
-          
-          premiumCheckbox.checked = !!is_premium;
-          priceContainer.classList.toggle('hidden', !premiumCheckbox.checked);
-          priceInput.value = price || 0;
-          
-          initEditor(encodedContent, encodedMetadata);
-          
-          document.getElementById('new-post-modal').classList.remove('hidden');
-          document.body.style.overflow = 'hidden';
-        }
-        
-        function closeModal() {
-          document.getElementById('new-post-modal').classList.add('hidden');
-          document.body.style.overflow = '';
-          if (editor) {
-            editor.destroy();
-            editor = null;
-          }
-        }
-
-        function submitPost() {
-          const btn = document.getElementById('save-btn');
-          const originalText = btn.innerHTML;
-          btn.innerHTML = 'Menyimpan...';
-          btn.disabled = true;
-          
-          if (editor) {
-            editor.save().then((outputData) => {
-              
-              const metaData = {
-                 title: document.getElementById('meta-title').value,
-                 description: document.getElementById('meta-desc').value,
-                 image: document.getElementById('meta-image').value
-              };
-              
-              document.getElementById('post-content').value = JSON.stringify(outputData);
-              document.getElementById('post-metadata').value = JSON.stringify(metaData);
-              document.getElementById('post-form').submit();
-              
-            }).catch((error) => {
-              console.log('Saving failed: ', error);
-              btn.innerHTML = originalText;
-              btn.disabled = false;
-              alert('Gagal mengambil data dari Editor');
-            });
-          } else {
-             document.getElementById('post-form').submit();
-          }
         }
       `}} />
     </Layout>
   )
 }
+
