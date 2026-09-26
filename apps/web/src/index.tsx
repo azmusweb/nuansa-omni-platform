@@ -160,8 +160,13 @@ app.use('*', async (c, next) => {
       tenantId = domainRec.tenant_id as string
     } else if (host.endsWith('.nuansa.net')) {
       const subdomain = host.split('.')[0]
-      const tenant = await c.env.MASTER_DB.prepare("SELECT id FROM tenants WHERE name = ?").bind(subdomain).first()
-      if (tenant) tenantId = tenant.id as string
+      const setting = await c.env.DB.prepare("SELECT tenant_id FROM settings WHERE key = 'subdomain' AND value = ?").bind(subdomain).first()
+      if (setting) {
+        tenantId = setting.tenant_id as string
+      } else {
+        const tenant = await c.env.MASTER_DB.prepare("SELECT id FROM tenants WHERE name = ?").bind(subdomain).first()
+        if (tenant) tenantId = tenant.id as string
+      }
     }
     
     if (!tenantId) {
