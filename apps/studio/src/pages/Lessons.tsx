@@ -35,7 +35,7 @@ export const Lessons: FC<{ currentPath: string; course: Course; lessons: Lesson[
  <h1 class="text-2xl font-bold text-slate-900 tracking-tight">{course.title}</h1>
  <p class="text-gray-400 text-sm mt-1">Kelola urutan dan isi materi kursus ini.</p>
  </div>
- <button onclick="openLessonModal()" class="bg-indigo-600 hover:bg-indigo-500 text-gray-900 px-5 py-2.5 rounded-xl font-medium text-sm transition shadow-lg shadow-indigo-500/20 flex items-center gap-2">
+ <button onclick="openLessonModal()" class="bg-indigo-600 hover:bg-indigo-500 text-[#161616] px-5 py-2.5 rounded-xl font-medium text-sm transition shadow-lg shadow-indigo-500/20 flex items-center gap-2">
  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
  Tambah Materi
  </button>
@@ -110,7 +110,7 @@ export const Lessons: FC<{ currentPath: string; course: Course; lessons: Lesson[
  </div>
  <div class="flex gap-3 pt-1">
  <button type="button" onclick="closeLessonModal()" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition text-sm font-medium">Batal</button>
- <button type="submit" class="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-gray-900 font-medium text-sm transition">Simpan</button>
+ <button type="submit" class="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-[#161616] font-medium text-sm transition">Simpan</button>
  </div>
  </form>
  </div>

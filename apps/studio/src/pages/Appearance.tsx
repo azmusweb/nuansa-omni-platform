@@ -16,7 +16,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  <div class="bg-white backdrop-blur-sm border border-[#ebebeb] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] flex flex-col overflow-hidden">
  
  <div class="p-4 border-b border-[#ebebeb] shrink-0 bg-gray-50 flex justify-between items-center">
- <h3 class="text-gray-900 font-semibold flex items-center gap-2">
+ <h3 class="text-[#161616] font-semibold flex items-center gap-2">
  <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
  Architect Panel
  </h3>
@@ -28,10 +28,10 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  
  {/* Tab Navigasi Sederhana */}
  <div class="flex text-xs font-medium text-gray-500 border-b border-[#ebebeb] bg-gray-50 sticky top-0 z-10">
- <button type="button" class="flex-1 py-3 text-gray-900 border-b-2 border-brand-500" id="tab-global" onclick="switchTab('global')">Global</button>
- <button type="button" class="flex-1 py-3 hover:text-gray-900 transition" id="tab-header" onclick="switchTab('header')">Header</button>
- <button type="button" class="flex-1 py-3 hover:text-gray-900 transition" id="tab-footer" onclick="switchTab('footer')">Footer</button>
- <button type="button" class="flex-1 py-3 hover:text-gray-900 transition" id="tab-html" onclick="switchTab('html')">HTML</button>
+ <button type="button" class="flex-1 py-3 text-[#161616] border-b-2 border-brand-500" id="tab-global" onclick="switchTab('global')">Global</button>
+ <button type="button" class="flex-1 py-3 hover:text-[#161616] transition" id="tab-header" onclick="switchTab('header')">Header</button>
+ <button type="button" class="flex-1 py-3 hover:text-[#161616] transition" id="tab-footer" onclick="switchTab('footer')">Footer</button>
+ <button type="button" class="flex-1 py-3 hover:text-[#161616] transition" id="tab-html" onclick="switchTab('html')">HTML</button>
  </div>
 
  {/* Panel Konten */}
@@ -59,7 +59,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  name="siteName" 
  id="input-siteName"
  value={siteName}
- class="w-full bg-gray-50 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+ class="w-full bg-gray-50 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-[#161616] text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
  placeholder="Nuansa Web"
  />
  </div>
@@ -88,7 +88,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
 
  <div>
  <label class="block text-gray-700 text-xs font-semibold uppercase tracking-wider mb-2">Tipografi (Font Utama)</label>
- <select name="fontFamily" id="input-fontFamily" class="w-full bg-gray-50 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition">
+ <select name="fontFamily" id="input-fontFamily" class="w-full bg-gray-50 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-[#161616] text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition">
  <option value="Inter" selected={fontFamily === 'Inter'}>Inter (Modern Sans)</option>
  <option value="Playfair Display" selected={fontFamily === 'Playfair Display'}>Playfair Display (Serif Elegan)</option>
  <option value="Space Grotesk" selected={fontFamily === 'Space Grotesk'}>Space Grotesk (Tech / Edgy)</option>
@@ -175,7 +175,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  </div>
 
  <div class="p-4 bg-gray-50 border-t border-[#ebebeb] shrink-0">
- <button type="submit" id="save-btn" class="w-full bg-brand-600 hover:bg-brand-500 text-gray-900 py-3 rounded-xl font-medium text-sm transition shadow-lg shadow-brand-500/20 flex justify-center items-center gap-2">
+ <button type="submit" id="save-btn" class="w-full bg-brand-600 hover:bg-brand-500 text-white py-3 rounded-xl font-medium text-sm transition shadow-lg shadow-brand-500/20 flex justify-center items-center gap-2">
  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
  Publikasikan Perubahan
  </button>
@@ -225,7 +225,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  <h1 class="text-5xl md:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight relative z-10 leading-tight">Selamat Datang di <br/>{siteName}</h1>
  <p class="text-lg text-gray-400 max-w-xl mb-10 relative z-10 leading-relaxed">Sistem manajemen konten kelas dunia yang memungkinkan Anda membangun kehadiran digital tanpa batas dengan performa Edge-Native.</p>
  <div class="flex gap-4 relative z-10">
- <button class="px-8 py-3.5 rounded-full text-gray-900 font-medium shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:opacity-90 transition-all transform hover:-translate-y-1" style={`background-color: ${primaryColor}`} id="previewButton">
+ <button class="px-8 py-3.5 rounded-full text-[#161616] font-medium shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:opacity-90 transition-all transform hover:-translate-y-1" style={`background-color: ${primaryColor}`} id="previewButton">
  Mulai Eksplorasi
  </button>
  <button class="px-8 py-3.5 rounded-full font-medium transition-all" style={`color: ${primaryColor}; background-color: ${primaryColor}15`} id="previewButtonSecondary">
@@ -239,15 +239,15 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  {footerLayout === 'columns' ? (
  <div id="footer-cols" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 max-w-5xl mx-auto border-b border-slate-800 pb-8">
  <div>
- <h4 class="text-gray-900 font-bold mb-4" style={`color: ${primaryColor}`} id="previewFooterLogo">{siteName}</h4>
+ <h4 class="text-[#161616] font-bold mb-4" style={`color: ${primaryColor}`} id="previewFooterLogo">{siteName}</h4>
  <p class="text-sm">Membangun pengalaman web tanpa latensi dengan teknologi mutakhir.</p>
  </div>
  <div>
- <h4 class="text-gray-900 font-bold mb-4">Tautan</h4>
+ <h4 class="text-[#161616] font-bold mb-4">Tautan</h4>
  <ul class="text-sm space-y-2"><li>Beranda</li><li>Artikel</li><li>Tentang</li></ul>
  </div>
  <div>
- <h4 class="text-gray-900 font-bold mb-4">Hubungi Kami</h4>
+ <h4 class="text-[#161616] font-bold mb-4">Hubungi Kami</h4>
  <p class="text-sm">contact@nuansa.net<br/>Jakarta, Indonesia</p>
  </div>
  </div>
@@ -274,7 +274,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  document.getElementById('panel-' + t).classList.remove('block');
  
  const btn = document.getElementById('tab-' + t);
- btn.classList.remove('text-gray-900', 'border-b-2', 'border-brand-500');
+ btn.classList.remove('text-[#161616]', 'border-b-2', 'border-brand-500');
  btn.classList.add('text-gray-500');
  });
  
@@ -283,7 +283,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
  
  const activeBtn = document.getElementById('tab-' + tab);
  activeBtn.classList.remove('text-gray-500');
- activeBtn.classList.add('text-gray-900', 'border-b-2', 'border-brand-500');
+ activeBtn.classList.add('text-[#161616]', 'border-b-2', 'border-brand-500');
  }
 
  // Apply Presets

@@ -27,7 +27,7 @@ export const Audit: FC<{ currentPath: string }> = ({ currentPath }) => {
  <div class="bg-white backdrop-blur border border-[#ebebeb] p-6 rounded-2xl flex items-center justify-between shadow-lg">
  <div>
  <p class="text-sm text-gray-500 font-medium mb-1">Ancaman Diblokir (30 Hari)</p>
- <h3 class="text-2xl font-bold text-gray-900">124</h3>
+ <h3 class="text-2xl font-bold text-[#161616]">124</h3>
  </div>
  <div class="w-12 h-12 bg-brand-500/10 rounded-xl flex items-center justify-center border border-[#ebebeb] text-brand-600">
  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
@@ -36,7 +36,7 @@ export const Audit: FC<{ currentPath: string }> = ({ currentPath }) => {
  <div class="bg-white backdrop-blur border border-[#ebebeb] p-6 rounded-2xl flex items-center justify-between shadow-lg">
  <div>
  <p class="text-sm text-gray-500 font-medium mb-1">Sesi Aktif</p>
- <h3 class="text-2xl font-bold text-gray-900">1</h3>
+ <h3 class="text-2xl font-bold text-[#161616]">1</h3>
  </div>
  <div class="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center border border-purple-500/20 text-purple-400">
  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -47,7 +47,7 @@ export const Audit: FC<{ currentPath: string }> = ({ currentPath }) => {
  {/* Audit Log Table */}
  <div class="bg-white backdrop-blur-sm border border-[#ebebeb] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden">
  <div class="p-6 border-b border-[#ebebeb] flex justify-between items-center">
- <h2 class="text-lg font-semibold text-gray-900">Log Aktivitas (Audit Trail)</h2>
+ <h2 class="text-lg font-semibold text-[#161616]">Log Aktivitas (Audit Trail)</h2>
  <button class="text-sm text-brand-600 font-medium hover:text-brand-300 transition">Ekspor CSV</button>
  </div>
  <table class="w-full text-left border-collapse">
@@ -64,7 +64,7 @@ export const Audit: FC<{ currentPath: string }> = ({ currentPath }) => {
  {auditLogs.map((log) => (
  <tr class="hover:bg-gray-100 transition">
  <td class="p-4 pl-6 text-gray-500 text-xs">{new Date(log.date).toLocaleString('id-ID')}</td>
- <td class="p-4 text-gray-900 font-medium">{log.action}</td>
+ <td class="p-4 text-[#161616] font-medium">{log.action}</td>
  <td class="p-4 text-gray-700">{log.user}</td>
  <td class="p-4 text-gray-500 text-xs">{log.ip}</td>
  <td class="p-4">

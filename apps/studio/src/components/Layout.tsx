@@ -270,7 +270,7 @@ export const Layout: FC<{ title: string; currentPath: string }> = ({ title, curr
  </div>
  <p class="text-xs text-gray-500 mt-2">Nantinya Anda bisa menghubungkan domain kustom sendiri dari pengaturan.</p>
  </div>
- <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-[#161616] font-bold py-3 px-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all">
+ <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 px-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all">
  Buat Website
  </button>
  </form>

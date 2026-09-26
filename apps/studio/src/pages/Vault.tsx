@@ -23,7 +23,7 @@ export const Vault: FC<{ currentPath: string, files?: MediaObject[] }> = ({ curr
  <div id="preview-container" class="hidden mb-6 relative rounded-xl overflow-hidden border border-[#ebebeb] bg-gray-50 aspect-square">
  <img id="image-preview" class="w-full h-full object-contain" />
  <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition">
- <button type="button" onclick="resetUpload()" class="bg-red-500/80 text-gray-900 px-3 py-1.5 rounded-lg text-sm font-medium backdrop-blur-sm">Hapus</button>
+ <button type="button" onclick="resetUpload()" class="bg-red-500/80 text-[#161616] px-3 py-1.5 rounded-lg text-sm font-medium backdrop-blur-sm">Hapus</button>
  </div>
  </div>
 
@@ -31,7 +31,7 @@ export const Vault: FC<{ currentPath: string, files?: MediaObject[] }> = ({ curr
  <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-[#ebebeb] shadow-inner">
  <svg class="w-8 h-8 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
  </div>
- <h2 class="text-lg font-semibold text-gray-900 mb-2">Unggah Aset Media</h2>
+ <h2 class="text-lg font-semibold text-[#161616] mb-2">Unggah Aset Media</h2>
  <p class="text-gray-500 text-xs mb-6 px-4">
  Pilih gambar. File akan disimpan secara permanen di R2 secara global.
  </p>
@@ -48,10 +48,10 @@ export const Vault: FC<{ currentPath: string, files?: MediaObject[] }> = ({ curr
  <input type="checkbox" id="apply-watermark" checked class="rounded border-slate-600 bg-gray-100 text-brand-600 focus:ring-brand-500/20" onchange="updatePreview()" />
  <span class="text-gray-700 text-sm font-medium">Beri Watermark Hak Cipta</span>
  </label>
- <input type="text" id="watermark-text" value="© Nuansa Studio" oninput="updatePreview()" class="w-full bg-gray-50 border border-[#ebebeb] rounded-lg px-3 py-2 text-sm text-gray-900 focus:border-brand-500 focus:outline-none placeholder-slate-600" />
+ <input type="text" id="watermark-text" value="© Nuansa Studio" oninput="updatePreview()" class="w-full bg-gray-50 border border-[#ebebeb] rounded-lg px-3 py-2 text-sm text-[#161616] focus:border-brand-500 focus:outline-none placeholder-slate-600" />
  <p class="text-[10px] text-gray-400 mt-2 leading-tight">Watermark dirender secara lokal menggunakan HTML5 Canvas sehingga 100% gratis tanpa biaya Serverless.</p>
  
- <button id="upload-btn" type="submit" class="w-full mt-4 bg-brand-600 text-gray-900 hover:bg-brand-500 px-5 py-2.5 rounded-xl font-semibold text-sm transition shadow-lg">
+ <button id="upload-btn" type="submit" class="w-full mt-4 bg-brand-600 text-white hover:bg-brand-500 px-5 py-2.5 rounded-xl font-semibold text-sm transition shadow-lg">
  Mulai Unggah
  </button>
  </div>
@@ -61,8 +61,8 @@ export const Vault: FC<{ currentPath: string, files?: MediaObject[] }> = ({ curr
  {/* Daftar Gambar di R2 */}
  <div class="md:col-span-2">
  <div class="bg-white backdrop-blur-sm border border-[#ebebeb] rounded-2xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] h-full">
- <h3 class="text-gray-900 font-medium mb-4 flex items-center gap-2">
- File Tersimpan <span class="bg-slate-700 text-gray-700 text-xs px-2 py-0.5 rounded-full">{files.length}</span>
+ <h3 class="text-[#161616] font-medium mb-4 flex items-center gap-2">
+ File Tersimpan <span class="bg-gray-100 text-gray-500 border border-[#ebebeb] text-xs px-2 py-0.5 rounded-full">{files.length}</span>
  </h3>
  
  {files.length === 0 ? (
@@ -76,16 +76,16 @@ export const Vault: FC<{ currentPath: string, files?: MediaObject[] }> = ({ curr
  <img src={file.url} alt={file.filename} class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" loading="lazy" />
  
  {file.has_watermark === 1 && (
- <div class="absolute top-2 right-2 bg-brand-500/80 backdrop-blur text-gray-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+ <div class="absolute top-2 right-2 bg-brand-500/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
  Watermarked
  </div>
  )}
 
  <div class="absolute inset-0 bg-gray-50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-3 text-center gap-2">
- <p class="text-gray-900 text-xs truncate w-full font-medium" title={file.filename}>{file.filename}</p>
+ <p class="text-[#161616] text-xs truncate w-full font-medium" title={file.filename}>{file.filename}</p>
  <p class="text-brand-600 text-[10px] mb-2">{(file.size / 1024).toFixed(1)} KB</p>
  <div class="flex flex-wrap gap-1.5 justify-center">
- <a href={file.url} target="_blank" class="bg-slate-700 text-gray-900 text-xs px-2.5 py-1 rounded hover:bg-slate-600 transition">
+ <a href={file.url} target="_blank" class="bg-gray-100 hover:bg-gray-200 text-[#161616] border border-[#ebebeb] text-xs px-2.5 py-1 rounded hover:bg-slate-600 transition">
  Buka
  </a>
  <button onclick={`navigator.clipboard.writeText(window.location.origin + '${file.url}'); alert('Tautan disalin!')`} class="bg-brand-600/20 text-brand-600 border border-[#ebebeb] text-xs px-2.5 py-1 rounded hover:bg-brand-600/30 transition">

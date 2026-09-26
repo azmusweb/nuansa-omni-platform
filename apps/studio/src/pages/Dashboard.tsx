@@ -27,18 +27,34 @@ export const Dashboard: FC<{
 
  {/* Main Content Area */}
  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
- <div class="lg:col-span-2 bg-white backdrop-blur-sm border border-[#ebebeb] p-6 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] min-h-[400px] flex flex-col items-center justify-center">
- <div class="w-16 h-16 rounded-full bg-brand-500/10 flex items-center justify-center mb-4 border border-[#ebebeb]">
- <svg class="w-8 h-8 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
- </div>
- <p class="text-brand-600 font-bold uppercase tracking-wider">Grafik Analisis Lalu Lintas (Segera Hadir)</p>
- <p class="text-sm text-gray-400 mt-2 text-center max-w-sm">
- Data analitik edge-native akan divisualisasikan di sini.
- </p>
+ <div class="lg:col-span-2 bg-white backdrop-blur-sm border border-[#ebebeb] p-6 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] flex flex-col">
+ 
+        <div class="w-full flex justify-between items-center mb-6">
+          <h3 class="text-lg font-bold text-[#161616] tracking-tight">Kinerja Situs</h3>
+          <select class="bg-gray-50 border border-[#ebebeb] text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
+            <option>7 Hari Terakhir</option>
+            <option>30 Hari Terakhir</option>
+            <option>Sepanjang Waktu</option>
+          </select>
+        </div>
+        <div class="w-full h-48 flex items-end justify-between gap-2 px-2 mt-auto">
+          {[40, 70, 45, 90, 65, 110, 85].map((h) => (
+            <div class="w-1/6 bg-brand-500/10 hover:bg-brand-500/20 transition-colors rounded-t-md relative group flex flex-col justify-end" style={`height: ${h}%`}>
+              <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#161616] text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                ${h * 12} Kunjungan
+              </div>
+              <div class="w-full bg-brand-500 rounded-t-md transition-all duration-500" style={`height: ${h}%`}></div>
+            </div>
+          ))}
+        </div>
+        <div class="w-full flex justify-between text-xs text-gray-400 mt-4 px-2 font-medium">
+          <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
+        </div>
+
  </div>
 
  <div class="bg-white backdrop-blur-sm border border-[#ebebeb] p-6 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
- <h3 class="text-lg font-bold text-brand-600 mb-6 uppercase tracking-wider">&gt; Aktivitas_Terbaru</h3>
+ <h3 class="text-lg font-bold text-brand-600 mb-6 uppercase tracking-wider">Aktivitas Terbaru</h3>
  <div class="space-y-6">
  {recentPosts.length === 0 ? (
  <p class="text-sm text-gray-400 ">Belum ada aktivitas penulisan artikel.</p>

@@ -21,7 +21,7 @@ export const Learn: FC<{ currentPath: string; courses: Course[] }> = ({ currentP
  <h1 class="text-3xl font-bold text-slate-900 mb-2 tracking-tight">Nuansa Learn</h1>
  <p class="text-slate-600 ">Kelola kursus dan materi pembelajaran.</p>
  </div>
- <button onclick="openCourseModal()" class="bg-brand-600 hover:bg-brand-500 text-gray-900 px-5 py-2.5 rounded-xl font-medium text-sm transition shadow-lg shadow-brand-500/20 flex items-center gap-2">
+ <button onclick="openCourseModal()" class="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition shadow-lg shadow-brand-500/20 flex items-center gap-2">
  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
  Buat Kursus Baru
  </button>
@@ -44,11 +44,11 @@ export const Learn: FC<{ currentPath: string; courses: Course[] }> = ({ currentP
  <img src={course.cover_image} alt={course.title} class="w-full h-full object-cover" />
  ) : (
  <div class="absolute inset-0 flex items-center justify-center">
- <svg class="w-12 h-12 text-gray-900/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+ <svg class="w-12 h-12 text-[#161616]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
  </div>
  )}
  <div class="absolute top-3 right-3">
- <span class={`text-xs font-semibold px-2 py-1 rounded-full ${course.is_published ? 'bg-emerald-500 text-gray-900' : 'bg-slate-700/80 text-gray-700'}`}>
+ <span class={`text-xs font-semibold px-2 py-1 rounded-full ${course.is_published ? 'bg-emerald-500 text-[#161616]' : 'bg-slate-700/80 text-gray-700'}`}>
  {course.is_published ? 'Publik' : 'Draft'}
  </span>
  </div>
@@ -116,7 +116,7 @@ export const Learn: FC<{ currentPath: string; courses: Course[] }> = ({ currentP
  </div>
  <div class="flex gap-3 pt-2">
  <button type="button" onclick="closeCourseModal()" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition text-sm font-medium">Batal</button>
- <button type="submit" class="flex-1 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-gray-900 font-medium text-sm transition">Simpan</button>
+ <button type="submit" class="flex-1 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-medium text-sm transition">Simpan</button>
  </div>
  </form>
  </div>

@@ -8,7 +8,7 @@ export const Tools: FC<{ currentPath: string }> = ({ currentPath }) => {
  
  <div class="bg-white backdrop-blur-sm border border-[#ebebeb] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden">
  <div class="p-6 border-b border-[#ebebeb]">
- <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+ <h2 class="text-lg font-semibold text-[#161616] flex items-center gap-2">
  <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
  1-Click WordPress Importer
  </h2>
@@ -39,7 +39,7 @@ export const Tools: FC<{ currentPath: string }> = ({ currentPath }) => {
  </div>
 
  <div class="flex justify-end pt-4">
- <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-gray-900 px-6 py-2.5 rounded-xl font-medium text-sm transition shadow-lg shadow-brand-500/20 flex items-center gap-2">
+ <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-xl font-medium text-sm transition shadow-lg shadow-brand-500/20 flex items-center gap-2">
  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path></svg>
  Mulai Proses Impor
  </button>

@@ -61,7 +61,7 @@ export const WritePost: FC<{ currentPath: string, post?: any }> = ({ currentPath
  Pratinjau
  </button>
  
- <button type="button" id="save-btn" onclick="submitPost()" class="bg-brand-600 hover:bg-brand-500 active:scale-95 text-[#161616] px-5 py-1.5 rounded font-medium text-sm transition shadow-sm flex items-center gap-2">
+ <button type="button" id="save-btn" onclick="submitPost()" class="bg-brand-600 hover:bg-brand-500 active:scale-95 text-white px-5 py-1.5 rounded font-medium text-sm transition shadow-sm flex items-center gap-2">
  <svg class="w-4 h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
  <span id="save-btn-text">{isEditing ? 'Perbarui' : 'Publikasikan'}</span>
  </button>

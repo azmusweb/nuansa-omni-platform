@@ -58,7 +58,7 @@ export const Settings: FC<{ currentPath: string, settings?: any, isSaved?: boole
  Dapatkan akses ke Custom Domain (misal: www.domainanda.com), tanpa iklan AdSense paksa, dan penyimpanan media tak terbatas.
  </p>
  <input type="hidden" name="target_plan" value="pro" />
- <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-[#161616] px-5 py-2.5 rounded-lg font-medium text-sm transition shadow-lg shadow-brand-500/20 active:scale-95">
+ <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition shadow-lg shadow-brand-500/20 active:scale-95">
  Request Upgrade Lisensi
  </button>
  </div>
@@ -90,7 +90,7 @@ export const Settings: FC<{ currentPath: string, settings?: any, isSaved?: boole
  </div>
  
  <div class="p-4 bg-[#f7f7f7] border-t border-[#ebebeb] text-right">
- <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-[#161616] px-6 py-2.5 rounded-lg font-medium text-sm transition">
+ <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition">
  Simpan Status
  </button>
  </div>
@@ -122,7 +122,7 @@ export const Settings: FC<{ currentPath: string, settings?: any, isSaved?: boole
  
  <div class="p-4 bg-[#f7f7f7] border-t border-[#ebebeb] text-right flex items-center justify-between">
  <p class="text-xs text-gray-400 text-left">Kosongkan jika tidak ingin menggunakan fitur notifikasi Telegram.</p>
- <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-[#161616] px-6 py-2.5 rounded-lg font-medium text-sm transition">
+ <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition">
  Simpan Integrasi
  </button>
  </div>
@@ -156,7 +156,7 @@ export const Settings: FC<{ currentPath: string, settings?: any, isSaved?: boole
  
  <div class="p-4 bg-[#f7f7f7] border-t border-[#ebebeb] text-right flex items-center justify-between">
  <p class="text-xs text-gray-400 text-left">Kosongkan jika tidak ingin memasang iklan.</p>
- <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-[#161616] px-6 py-2.5 rounded-lg font-medium text-sm transition">
+ <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition">
  Simpan AdSense
  </button>
  </div>
@@ -233,7 +233,7 @@ export const Settings: FC<{ currentPath: string, settings?: any, isSaved?: boole
  </div>
  
  <div class="p-4 bg-[#f7f7f7] border-t border-[#ebebeb] text-right">
- <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-[#161616] px-6 py-2.5 rounded-lg font-medium text-sm transition">
+ <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition">
  Simpan Konfigurasi PWA
  </button>
  </div>

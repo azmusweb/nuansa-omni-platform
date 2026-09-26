@@ -11,7 +11,7 @@ export const Domains = ({ currentPath, domains }: { currentPath: string, domains
  </div>
  <button 
  onclick="document.getElementById('addDomainModal').classList.remove('hidden')"
- className="bg-blue-600 hover:bg-blue-700 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+ className="bg-blue-600 hover:bg-blue-700 text-[#161616] px-4 py-2 rounded-lg text-sm font-medium transition-colors">
  Tambah Domain
  </button>
  </div>
@@ -30,7 +30,7 @@ export const Domains = ({ currentPath, domains }: { currentPath: string, domains
  {domains.map((domain) => (
  <tr key={domain.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
  <td className="p-4">
- <div className="font-medium text-gray-900">{domain.domain}</div>
+ <div className="font-medium text-[#161616]">{domain.domain}</div>
  </td>
  <td className="p-4">
  <span className={`px-2 py-1 rounded-full text-xs font-medium ${domain.is_active ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
@@ -81,7 +81,7 @@ export const Domains = ({ currentPath, domains }: { currentPath: string, domains
  Batal
  </button>
  <button type="submit" 
- className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-gray-900 rounded-lg transition-colors">
+ className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-[#161616] rounded-lg transition-colors">
  Simpan
  </button>
  </div>

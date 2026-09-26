@@ -48,7 +48,7 @@ export const Posts: FC<{ currentPath: string, posts?: Post[] }> = ({ currentPath
 
  <div class="flex items-center gap-3">
  <span class="text-sm text-brand-600 font-semibold uppercase tracking-wide px-2 cursor-pointer hover:opacity-80">Kelola</span>
- <a href="/posts/new" class="bg-brand-600 hover:bg-brand-500 active:scale-95 text-[#161616] px-5 py-2.5 rounded-full font-semibold text-sm transition shadow-md flex items-center justify-center gap-2 shrink-0">
+ <a href="/posts/new" class="bg-brand-600 hover:bg-brand-500 active:scale-95 text-white px-5 py-2.5 rounded-full font-semibold text-sm transition shadow-md flex items-center justify-center gap-2 shrink-0">
  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
  POSTINGAN BARU
  </a>
@@ -71,7 +71,7 @@ export const Posts: FC<{ currentPath: string, posts?: Post[] }> = ({ currentPath
  
  {/* Checkbox (visual only for now) & Thumbnail */}
  <div class="flex items-center gap-4 mb-3 sm:mb-0 sm:w-1/4 shrink-0">
- <div class="w-4 h-4 rounded border border-slate-300 flex-shrink-0 cursor-pointer hidden sm:block"></div>
+ <input type="checkbox" class="w-4 h-4 rounded border-[#ebebeb] text-brand-600 focus:ring-brand-500 cursor-pointer hidden sm:block accent-brand-600" />
  
  {/* Thumbnail Placeholder ('T' icon) */}
  <div class="w-12 h-12 bg-slate-100 text-gray-500 rounded flex items-center justify-center font-serif text-2xl border border-slate-200 flex-shrink-0">

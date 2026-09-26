@@ -10,7 +10,7 @@ export const Redirects: FC<{ currentPath: string, redirects: any[] }> = ({ curre
  <div class="bg-white border border-[#ebebeb] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden">
  <div class="p-6 border-b border-[#ebebeb] flex justify-between items-center bg-gray-50">
  <div>
- <h2 class="text-lg font-semibold text-gray-900">Daftar Pengalihan Aktif</h2>
+ <h2 class="text-lg font-semibold text-[#161616]">Daftar Pengalihan Aktif</h2>
  <p class="text-sm text-gray-500 mt-1">Kelola aturan pengalihan URL (301/302) untuk SEO dan pemeliharaan tautan rusak.</p>
  </div>
  </div>
@@ -35,7 +35,7 @@ export const Redirects: FC<{ currentPath: string, redirects: any[] }> = ({ curre
  ) : (
  redirects.map((r: any) => (
  <tr class="hover:bg-dark-700/20 transition group">
- <td class="px-6 py-4 text-sm text-gray-900 break-all">{r.source_url}</td>
+ <td class="px-6 py-4 text-sm text-[#161616] break-all">{r.source_url}</td>
  <td class="px-6 py-4 text-sm text-gray-700 break-all">{r.target_url}</td>
  <td class="px-6 py-4">
  <span class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -66,7 +66,7 @@ export const Redirects: FC<{ currentPath: string, redirects: any[] }> = ({ curre
  <form action="/api/redirects" method="POST" class="bg-white border border-[#ebebeb] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden">
  <input type="hidden" name="action" value="create" />
  <div class="p-6 border-b border-[#ebebeb] bg-gray-50">
- <h2 class="text-lg font-semibold text-gray-900">Buat Aturan Baru</h2>
+ <h2 class="text-lg font-semibold text-[#161616]">Buat Aturan Baru</h2>
  </div>
  
  <div class="p-6 space-y-5">
@@ -76,7 +76,7 @@ export const Redirects: FC<{ currentPath: string, redirects: any[] }> = ({ curre
  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
  <span class="text-gray-400 sm:text-sm">/</span>
  </div>
- <input type="text" name="source_url" required class="w-full bg-gray-50 border border-[#ebebeb] rounded-xl pl-6 pr-4 py-2.5 text-gray-900 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition" placeholder="artikel-lama" />
+ <input type="text" name="source_url" required class="w-full bg-gray-50 border border-[#ebebeb] rounded-xl pl-6 pr-4 py-2.5 text-[#161616] text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition" placeholder="artikel-lama" />
  </div>
  <p class="text-[11px] text-gray-400 mt-1.5">Tanpa domain utama. Contoh: <code>/tentang-kami</code></p>
  </div>
@@ -87,14 +87,14 @@ export const Redirects: FC<{ currentPath: string, redirects: any[] }> = ({ curre
  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
  <span class="text-gray-400 sm:text-sm">/</span>
  </div>
- <input type="text" name="target_url" required class="w-full bg-gray-50 border border-[#ebebeb] rounded-xl pl-6 pr-4 py-2.5 text-gray-900 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition" placeholder="artikel-baru" />
+ <input type="text" name="target_url" required class="w-full bg-gray-50 border border-[#ebebeb] rounded-xl pl-6 pr-4 py-2.5 text-[#161616] text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition" placeholder="artikel-baru" />
  </div>
  <p class="text-[11px] text-gray-400 mt-1.5">Bisa path relatif (<code>/kontak</code>) atau URL absolut (<code>https://web.com</code>)</p>
  </div>
 
  <div>
  <label class="block text-gray-700 text-sm font-medium mb-2">Tipe Pengalihan (Kode HTTP)</label>
- <select name="status_code" class="w-full bg-gray-50 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition">
+ <select name="status_code" class="w-full bg-gray-50 border border-[#ebebeb] rounded-xl px-4 py-2.5 text-[#161616] text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition">
  <option value="301">301 - Dipindahkan Permanen (Disarankan untuk SEO)</option>
  <option value="302">302 - Dipindahkan Sementara</option>
  </select>
@@ -102,7 +102,7 @@ export const Redirects: FC<{ currentPath: string, redirects: any[] }> = ({ curre
  </div>
  
  <div class="p-4 bg-gray-50 border-t border-[#ebebeb]">
- <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-gray-900 py-2.5 rounded-lg font-medium text-sm transition flex justify-center items-center gap-2">
+ <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white py-2.5 rounded-lg font-medium text-sm transition flex justify-center items-center gap-2">
  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
  Tambah Pengalihan
  </button>
