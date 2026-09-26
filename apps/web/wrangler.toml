@@ -5,7 +5,7 @@ account_id = "ecd009a3d2a4392730f427e7a94ec32f"
 
 routes = [
   { pattern = "nuansa.net", custom_domain = true },
-  { pattern = "*.nuansa.net", custom_domain = true }
+  { pattern = "*.nuansa.net/*", zone_name = "nuansa.net" }
 ]
 
 [[d1_databases]]
