@@ -32,7 +32,7 @@ export const Settings: FC<{ currentPath: string, settings?: any, isSaved?: boole
             <div class="p-6 border-b border-slate-700/50 flex justify-between items-center bg-dark-900/50">
               <div>
                 <h2 class="text-lg font-semibold text-white">Billing & Lisensi</h2>
-                <p class="text-sm text-slate-400 mt-1">Kelola lisensi Nuansa Omni-Platform dan Custom Domain Anda.</p>
+                <p class="text-sm text-slate-400 mt-1">Kelola lisensi Nuansa Network dan Custom Domain Anda.</p>
               </div>
             </div>
             
@@ -124,6 +124,40 @@ export const Settings: FC<{ currentPath: string, settings?: any, isSaved?: boole
               <p class="text-xs text-slate-500 text-left">Kosongkan jika tidak ingin menggunakan fitur notifikasi Telegram.</p>
               <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition">
                 Simpan Integrasi
+              </button>
+            </div>
+          </form>
+
+          {/* Monetisasi / AdSense Integration Form */}
+          <form action="/api/settings" method="POST" class="bg-dark-800 border border-slate-700/50 rounded-2xl shadow-xl overflow-hidden">
+            <input type="hidden" name="redirectUrl" value="/settings" />
+            
+            <div class="p-6 border-b border-slate-700/50 flex justify-between items-center bg-dark-900/50">
+              <div>
+                <h2 class="text-lg font-semibold text-white">Monetisasi (Google AdSense)</h2>
+                <p class="text-sm text-slate-400 mt-1">Masukkan Publisher ID AdSense Anda untuk mulai menghasilkan uang dari tayangan iklan.</p>
+              </div>
+            </div>
+            
+            <div class="p-6 space-y-5">
+              <div class="p-4 bg-emerald-900/20 border border-emerald-500/30 rounded-xl mb-6">
+                <p class="text-emerald-400 text-sm flex items-start gap-2">
+                  <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <span><strong>Nuansa Ads Network:</strong> Pendapatan dari tayangan iklan akan dibagi secara otomatis antara Anda (70%) dan platform (30%) tanpa perlu persetujuan manual.</span>
+                </p>
+              </div>
+              
+              <div>
+                <label class="block text-slate-300 text-sm font-medium mb-2">Publisher ID AdSense</label>
+                <input type="text" name="adsense_client_id" value={settings['adsense_client_id'] || ''} placeholder="ca-pub-1234567890123456" class="w-full bg-dark-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition placeholder-slate-600" />
+                <p class="text-xs text-slate-500 mt-2">Dapatkan ID ini dari dashboard Google AdSense Anda.</p>
+              </div>
+            </div>
+            
+            <div class="p-4 bg-dark-900/50 border-t border-slate-700/50 text-right flex items-center justify-between">
+              <p class="text-xs text-slate-500 text-left">Kosongkan jika tidak ingin memasang iklan.</p>
+              <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition">
+                Simpan AdSense
               </button>
             </div>
           </form>

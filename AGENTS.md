@@ -1,4 +1,14 @@
-# CETAK BIRU MASTER: NUANSA OMNI-PLATFORM (EDISI LENGKAP)
+# ATURAN SISTEM & CETAK BIRU MASTER (AGENTS.md)
+
+> **INSTRUKSI UNTUK AI (AGENT):**
+> File ini adalah sumber kebenaran utama (Single Source of Truth) untuk proyek Nuansa Network. 
+> 1. Setiap memulai tugas baru, Anda HARUS menjadikan file ini sebagai referensi arsitektur.
+> 2. Posisikan diri Anda sebagai Senior Full-Stack Engineer yang ahli dalam ekosistem Cloudflare (Workers, D1, R2, Pages) dan React (TypeScript).
+> 3. Semua pengembangan fitur harus sesuai dengan arsitektur Edge-Native tanpa VPS/cPanel.
+
+---
+
+# CETAK BIRU MASTER: NUANSA NETWORK (EDISI LENGKAP)
 **Sistem Operasi Web, Konten, & Aplikasi Berbasis Cloudflare Edge**
 
 Nuansa CMS adalah platform digital komprehensif (*Omni-Platform*) yang meruntuhkan batasan CMS tradisional. Dibangun 100% di atas ekosistem Cloudflare, platform ini menghadirkan kecepatan tanpa latensi (*edge-native*), keamanan absolut, dan fungsionalitas premium bawaan tanpa memerlukan *plugin* pihak ketiga.
@@ -96,3 +106,19 @@ Mengeksekusi aplikasi spesifik langsung di bawah domain klien.
 *   **Nuansa CLI:** Alat terminal bagi pengembang untuk merancang tema secara lokal dan melakukan *push deploy* langsung ke jaringan.
 *   **Sistem Webhook Universal:** Menghubungkan berbagai *event* situs (pembelian baru, anggota mendaftar) ke aplikasi pihak ketiga (Telegram, Slack, Zapier).
 *   **CI/CD & Staging:** Pemisahan lingkungan pengembangan (`dev.nuansa.net`) dan produksi untuk uji coba rilis fitur baru yang aman.
+
+---
+
+## LAPISAN 8: STACK TEKNOLOGI & STRUKTUR REPOSITORI (Pemutakhiran)
+
+Berdasarkan alur kerja saat ini, proyek menggunakan pendekatan Monorepo dengan struktur berikut:
+*   **Frontend (Nuansa Studio):** Berada di direktori `apps/studio`. Dibangun menggunakan **React (TypeScript/TSX)** dan **Tailwind CSS** untuk antarmuka pengguna (Dashboard, Posts, Gallery, WritePost, dll).
+*   **Backend & Master:** Skrip logika, *query* SQL, dan fungsi administrasi berada di `apps/master`.
+*   **Manajemen Database:** Menggunakan **Cloudflare D1** (SQLite) dengan skema yang terdefinisi (seperti di `query.sql`, `setup.sql`, `theme_template.sql`).
+*   **Infrastruktur CDN & Hosting:** Sepenuhnya di-hosting dan di-deploy melalui Cloudflare (Pages & Workers) dengan instruksi deployment merujuk pada `panduan_implementasi_cloudflare.md`.
+
+### Standar Penulisan Kode (Coding Guidelines)
+1. **Bahasa Antarmuka:** Gunakan bahasa Indonesia baku untuk UI (teks tombol, notifikasi, dll) dan dokumentasi kepada pengguna.
+2. **Bahasa Kode:** Gunakan bahasa Inggris standar untuk nama variabel, fungsi, dan komponen (contoh: `handleClick`, `Posts.tsx`) agar sesuai dengan praktik terbaik global.
+3. **Komponen Reusable:** Utamakan pembuatan komponen React yang dapat digunakan ulang (berada di `apps/studio/src/components/`).
+4. **Desain:** Gunakan kelas utilitas Tailwind CSS untuk desain UI, pastikan responsif, modern, dan bernuansa premium (*Glassmorphism*, transisi halus, dsb.).

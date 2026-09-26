@@ -1,137 +1,87 @@
 import { Hono } from 'hono'
 import type { FC } from 'hono/jsx'
 import { getCookie, setCookie } from 'hono/cookie'
-import { html } from 'hono/html'
+import { html, raw } from 'hono/html'
 
 type Bindings = {
   DB: D1Database
   MASTER_DB: D1Database
 }
 
-const app = new Hono<{ Bindings: Bindings }>()
+const app = new Hono<{ 
+  Bindings: Bindings,
+  Variables: {
+    tenantId: string
+  }
+}>()
 
-const Layout: FC<{ title: string, siteName: string, primaryColor: string, adsenseId?: string, children: any }> = ({ title, siteName, primaryColor, adsenseId, children }) => {
-  return (
-    <html lang="id">
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{title}</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        {html`
-          <script>
-            tailwind.config = {
-              darkMode: 'class'
-            }
-          </script>
-          <script>
-            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-              document.documentElement.classList.add('dark');
-            } else {
-              document.documentElement.classList.remove('dark');
-            }
-            window.addEventListener('storage', (e) => {
-              if (e.key === 'theme') {
-                if (e.newValue === 'dark') document.documentElement.classList.add('dark');
-                else document.documentElement.classList.remove('dark');
-              }
-            });
-            function toggleTheme() {
-              if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-              } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-              }
-            }
-          </script>
-        `}
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            :root { --primary-color: ${primaryColor}; }
-            .bg-theme { background-color: var(--primary-color); }
-            .text-theme { color: var(--primary-color); }
-            .border-theme { border-color: var(--primary-color); }
-            
-            .glassmorphism {
-              background: rgba(255, 255, 255, 0.85);
-              backdrop-filter: blur(16px);
-              -webkit-backdrop-filter: blur(16px);
-              border: 1px solid rgba(255, 255, 255, 0.5);
-            }
-            .dark .glassmorphism {
-              background: rgba(15, 23, 42, 0.7);
-              border: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            .animate-mesh {
-              background: radial-gradient(at 40% 20%, hsla(228,100%,74%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 50%, hsla(355,100%,93%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%);
-              filter: blur(60px);
-              opacity: 0.15;
-            }
-            .dark .animate-mesh {
-              background: radial-gradient(at 40% 20%, hsla(228,100%,74%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 50%, hsla(280,100%,50%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%),
-                          radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%),
-                          radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%);
-              opacity: 0.1;
-            }
-          `
-        }} />
-        {adsenseId && (
-          <script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseId}`} crossorigin="anonymous"></script>
-        )}
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-        <style dangerouslySetInnerHTML={{__html: `body { font-family: 'Inter', sans-serif; }`}} />
-      </head>
-      <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 min-h-screen flex flex-col relative transition-colors duration-300">
-        <div class="fixed inset-0 z-0 pointer-events-none animate-mesh"></div>
-        {/* Header Global */}
-        <header class="glassmorphism border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 shadow-sm transition-colors duration-300">
-          <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="/" class="text-2xl font-extrabold tracking-tight text-theme">
-              {siteName}
-            </a>
-            <div class="flex items-center gap-6">
-              <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-slate-600 dark:text-slate-400">
-                <a href="/" class="hover:text-theme dark:hover:text-theme transition">Beranda</a>
-                <a href="/belajar" class="hover:text-theme dark:hover:text-theme transition">Belajar</a>
-                <a href="/katalog" class="hover:text-theme dark:hover:text-theme transition">Katalog Produk</a>
-                <a href="/login" class="hover:text-theme dark:hover:text-theme transition ml-4">Login</a>
-                <a href="/register" class="bg-theme text-white hover:opacity-90 transition px-4 py-2 rounded-xl shadow-sm">Daftar</a>
-              </nav>
-              <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" title="Toggle Theme">
-                <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-              </button>
-            </div>
-          </div>
-        </header>
+// Helper untuk Resolusi AdSense Dinamis (70% Klien, 30% Master)
+async function getAdsenseId(c: any, settings: any) {
+  let masterId = ''
+  try {
+    const { results } = await c.env.MASTER_DB.prepare("SELECT * FROM settings WHERE key = 'adsense_master_id'").all()
+    if (results && results.length > 0) masterId = results[0].value as string
+  } catch(e) {}
 
-        {/* Konten Halaman */}
-        <main class="flex-1 relative z-10">
-          {children}
-        </main>
+  const clientId = settings['adsense_client_id'] || ''
+  
+  if (clientId && masterId) {
+    return Math.random() < 0.7 ? clientId : masterId
+  }
+  return clientId || masterId
+}
 
-        {/* Footer Global */}
-        <footer class="bg-slate-900 text-slate-400 py-12 mt-20 relative z-10">
-          <div class="max-w-5xl mx-auto px-6 text-center">
-            <p>&copy; {new Date().getFullYear()} {siteName}. Hak Cipta Dilindungi.</p>
-            <p class="text-xs mt-2 opacity-50">Didukung oleh Nuansa Omni-Platform (Edge-Native CMS)</p>
-          </div>
-        </footer>
-      </body>
-    </html>
-  )
+// Helper untuk Nuansa Polyglot (Edge Geo-routing AI Translation Mock)
+const getLangContext = (c: any) => {
+  // Deteksi negara dari Cloudflare Edge (fallback ke ID jika lokal)
+  const country = c.req.header('cf-ipcountry') || 'ID'
+  const lang = country === 'ID' ? 'id' : 'en'
+  
+  const dict = {
+    'id': {
+      home: 'Beranda', learn: 'Belajar', catalog: 'Katalog Produk', login: 'Login', register: 'Daftar',
+      welcome: 'Selamat Datang di',
+      hero_desc: 'Jelajahi wawasan, cerita, dan pemikiran terbaru yang kami bagikan langsung dengan kecepatan cahaya dari ujung jaringan (edge).',
+      latest_articles: 'Artikel Terbaru', articles_count: 'artikel',
+      no_articles: 'Belum ada artikel yang diterbitkan. Tunggu pembaruan kami selanjutnya!',
+      article_badge: 'Artikel', no_summary: 'Tidak ada ringkasan...',
+      rights: 'Hak Cipta Dilindungi.', powered: 'Didukung oleh Nuansa Network (Edge-Native CMS)'
+    },
+    'en': {
+      home: 'Home', learn: 'Learn', catalog: 'Products', login: 'Sign In', register: 'Sign Up',
+      welcome: 'Welcome to',
+      hero_desc: 'Explore the latest insights, stories, and thoughts we share at the speed of light from the edge of the network.',
+      latest_articles: 'Latest Articles', articles_count: 'articles',
+      no_articles: 'No articles published yet. Stay tuned for our next update!',
+      article_badge: 'Article', no_summary: 'No summary available...',
+      rights: 'All Rights Reserved.', powered: 'Powered by Nuansa Network (Edge-Native CMS)'
+    }
+  }
+
+  const t = (key: keyof typeof dict['id']) => dict[lang][key] || dict['id'][key]
+  return { lang, t }
+}
+
+import { defaultThemeHtml } from './theme'
+
+const Layout: FC<{ title: string, siteName: string, primaryColor: string, adsenseId?: string, lang?: string, t?: any, customThemeHtml?: string, description?: string, image?: string, url?: string, children: any }> = ({ title, siteName, primaryColor, adsenseId, lang = 'id', t = getLangContext({ req: { header: () => 'ID' } }).t, customThemeHtml, description, image, url, children }) => {
+  const isMaster = siteName === 'Nuansa Network';
+  const themeToRender = isMaster ? defaultThemeHtml : (customThemeHtml || defaultThemeHtml);
+
+  if (themeToRender) {
+    const parts = themeToRender.split('{{content}}')
+    const pre = parts[0] ? parts[0].replace(/{{siteName}}/g, siteName).replace(/{{title}}/g, title).replace(/{{primaryColor}}/g, primaryColor) : ''
+    const post = parts[1] ? parts[1].replace(/{{siteName}}/g, siteName).replace(/{{title}}/g, title).replace(/{{primaryColor}}/g, primaryColor) : ''
+    return (
+      <>
+        {raw(pre)}
+        {children}
+        {raw(post)}
+      </>
+    )
+  }
+
+  return <html><body>Error: No theme available.</body></html>
 }
 
 const SuccessPage: FC<{ tenantId: string }> = ({ tenantId }) => (
@@ -196,25 +146,47 @@ const SuccessPage: FC<{ tenantId: string }> = ({ tenantId }) => (
   </html>
 )
 
-// Middleware Interceptor untuk Analytics & Redirects
 app.use('*', async (c, next) => {
   const path = c.req.path
   
   if (!path.startsWith('/api/') && !path.includes('.')) {
+    const host = c.req.header('host') || ''
+    let tenantId = ''
+    
+    // Check if it's a known custom domain first
+    const domainRec = await c.env.MASTER_DB.prepare("SELECT tenant_id FROM domains WHERE domain = ? AND is_active = 1").bind(host).first()
+    
+    if (domainRec) {
+      tenantId = domainRec.tenant_id as string
+    } else if (host.endsWith('.nuansa.net')) {
+      const subdomain = host.split('.')[0]
+      const tenant = await c.env.MASTER_DB.prepare("SELECT id FROM tenants WHERE name = ?").bind(subdomain).first()
+      if (tenant) tenantId = tenant.id as string
+    }
+    
+    if (!tenantId) {
+      if (!c.req.path.startsWith('/api/') && c.req.path !== '/register') {
+          return c.text('Website Not Found. Domain is not connected.', 404)
+      }
+    }
+    c.set('tenantId', tenantId)
+
     // 1. Cek Redirect
     try {
-      const redirectRow: any = await c.env.DB.prepare("SELECT * FROM redirects WHERE source_url = ?").bind(path).first()
+      const redirectRow = await c.env.DB.prepare("SELECT * FROM redirects WHERE source_url = ? AND tenant_id = ?").bind(path, tenantId).first()
       if (redirectRow) {
-        return c.redirect(redirectRow.target_url, redirectRow.status_code || 301)
+        return c.redirect(redirectRow.target_url as string, (redirectRow.status_code as any) || 301)
       }
     } catch(e) {}
 
     // 2. Catat Analytics
-    try {
-      await c.env.DB.prepare(
-        "INSERT INTO analytics (id, path, views, last_visited_at) VALUES (?, ?, 1, CURRENT_TIMESTAMP) ON CONFLICT(path) DO UPDATE SET views = views + 1, last_visited_at = CURRENT_TIMESTAMP"
-      ).bind(crypto.randomUUID(), path).run()
-    } catch(e) {}
+    if (tenantId) {
+      try {
+        await c.env.DB.prepare(
+          "INSERT INTO analytics (id, tenant_id, path, views, last_visited_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP) ON CONFLICT(path) DO UPDATE SET views = views + 1, last_visited_at = CURRENT_TIMESTAMP"
+        ).bind(crypto.randomUUID(), tenantId, path).run()
+      } catch(e) {}
+    }
   }
 
   await next()
@@ -223,67 +195,94 @@ app.use('*', async (c, next) => {
 // Rute Halaman Utama (Daftar Artikel)
 app.get('/', async (c) => {
   // Mengambil Pengaturan Tema (Nuansa Architect)
-  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings").all()
+  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings WHERE tenant_id = ?").bind(c.get("tenantId")).all()
   const settings = rawSettings.reduce((acc: any, curr: any) => {
     acc[curr.key] = curr.value; return acc
   }, {})
   
-  const siteName = settings['siteName'] || 'Nuansa Web'
+  const siteName = 'Nuansa Network'
   const primaryColor = settings['primaryColor'] || '#3b82f6'
 
-  let adsenseId = ''
-  try {
-    const { results: masterSettings } = await c.env.MASTER_DB.prepare("SELECT * FROM settings WHERE key = 'adsense_master_id'").all()
-    if (masterSettings && masterSettings.length > 0) {
-      adsenseId = masterSettings[0].value as string
-    }
-  } catch (e) {
-    // MASTER_DB tidak ada tabel settings (abaikan)
-  }
+  const adsenseId = await getAdsenseId(c, settings)
 
   // Mengambil Daftar Artikel
-  const { results: posts } = await c.env.DB.prepare("SELECT * FROM posts WHERE status != 'draft' ORDER BY created_at DESC").all()
+  const { results: posts } = await c.env.DB.prepare("SELECT * FROM posts WHERE status != 'draft' AND tenant_id = ? ORDER BY created_at DESC").bind(c.get("tenantId")).all()
+
+  const { lang, t } = getLangContext(c)
 
   return c.html(
-    <Layout title={siteName} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId}>
-      {/* Hero Section */}
-      <section class="bg-theme text-white py-24 text-center px-6">
-        <h1 class="text-4xl md:text-5xl font-extrabold mb-6">Selamat Datang di {siteName}</h1>
-        <p class="text-lg md:text-xl opacity-90 max-w-2xl mx-auto mb-8">
-          Jelajahi wawasan, cerita, dan pemikiran terbaru yang kami bagikan langsung dengan kecepatan cahaya dari ujung jaringan (edge).
-        </p>
+    <Layout title={siteName} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId} lang={lang} t={t} customThemeHtml={settings['customThemeHtml']}>
+      {/* Hero Section Modernized */}
+      <section class="relative py-32 md:py-48 text-center px-6 overflow-hidden">
+        <div class="absolute inset-0 bg-theme/10 dark:bg-theme/5 mix-blend-multiply"></div>
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-theme/20 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="absolute top-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="max-w-4xl mx-auto relative z-10 fade-in-up">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-theme/10 dark:bg-theme/20 border border-theme/20 text-theme text-sm font-bold tracking-wide uppercase mb-8 shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-theme animate-pulse"></span>
+            Platform Edge-Native
+          </div>
+          <h1 class="text-5xl md:text-7xl font-extrabold mb-8 text-slate-900 dark:text-white leading-[1.1] tracking-tight">
+            {t('welcome')} <span class="text-transparent bg-clip-text bg-gradient-to-r from-theme to-purple-600">{siteName}</span>
+          </h1>
+          <p class="text-lg md:text-2xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed font-medium">
+            {t('hero_desc')}
+          </p>
+          <a href="#articles" class="inline-flex items-center justify-center gap-2 bg-theme hover:bg-theme/90 text-white hover:-translate-y-1 transition-all px-8 py-4 rounded-full font-bold text-lg shadow-lg shadow-theme/30">
+            Mulai Membaca <svg class="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+          </a>
+        </div>
       </section>
 
-      {/* Grid Artikel */}
-      <section class="max-w-5xl mx-auto px-6 py-16">
-        <div class="flex items-center justify-between mb-8">
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Artikel Terbaru</h2>
-          <span class="text-sm font-medium text-slate-500 dark:text-slate-400">{posts.length} artikel</span>
+      {/* Grid Artikel Modern */}
+      <section id="articles" class="max-w-6xl mx-auto px-6 py-24 scroll-mt-24 relative z-10">
+        <div class="flex flex-col md:flex-row items-center justify-between mb-12 fade-in-up delay-100">
+          <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t('latest_articles')}</h2>
+          <span class="mt-4 md:mt-0 px-4 py-2 rounded-full bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-sm font-bold text-slate-500 dark:text-slate-400 shadow-inner">
+            {posts.length} {t('articles_count')}
+          </span>
         </div>
 
         {posts.length === 0 ? (
-          <div class="text-center py-20 glassmorphism rounded-2xl border border-slate-200 dark:border-slate-800">
-            <p class="text-slate-500 dark:text-slate-400">Belum ada artikel yang diterbitkan. Tunggu pembaruan kami selanjutnya!</p>
+          <div class="text-center py-24 glassmorphism rounded-3xl border border-slate-200 dark:border-zinc-800 fade-in-up delay-200">
+            <div class="w-20 h-20 bg-slate-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+            </div>
+            <p class="text-slate-500 dark:text-slate-400 font-medium text-lg">{t('no_articles')}</p>
           </div>
         ) : (
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {posts.map((post: any) => (
-              <a href={`/read/${post.slug}`} class="group glassmorphism rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl dark:hover:shadow-slate-900/50 transition-all duration-300 flex flex-col h-full hover:-translate-y-1">
-                <div class="h-48 bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center border-b border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-600 relative overflow-hidden">
-                  <div class="absolute inset-0 bg-gradient-to-tr from-theme/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  {/* Placeholder gambar jika tidak ada cover */}
-                  <svg class="w-12 h-12 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+            {posts.map((post: any, index: number) => (
+              <a href={`/read/${post.slug}`} class={`group glassmorphism rounded-3xl border border-slate-200 dark:border-zinc-800 overflow-hidden hover:shadow-2xl hover:shadow-theme/10 transition-all duration-500 flex flex-col h-full hover:-translate-y-2 fade-in-up delay-${Math.min(300, (index%3 + 1)*100)}`}>
+                <div class="h-56 bg-slate-100 dark:bg-zinc-900 flex items-center justify-center border-b border-slate-200 dark:border-zinc-800 text-slate-300 dark:text-slate-600 relative overflow-hidden">
+                  <div class="absolute inset-0 bg-theme/5 group-hover:bg-theme/20 transition-colors duration-500 z-10"></div>
+                  {post.cover_image ? (
+                    <img src={post.cover_image} alt={post.title} class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out" loading="lazy" />
+                  ) : (
+                    <svg class="w-16 h-16 relative z-0 opacity-50 group-hover:scale-110 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                  )}
+                  {post.is_premium && (
+                    <div class="absolute top-4 right-4 z-20 bg-amber-500 text-white text-[10px] font-extrabold px-3 py-1.5 uppercase rounded-full shadow-lg flex items-center gap-1 backdrop-blur-sm bg-opacity-90">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg> PREMIUM
+                    </div>
+                  )}
                 </div>
-                <div class="p-6 flex flex-col flex-1 relative z-10">
-                  <div class="text-xs font-semibold text-theme mb-3 uppercase tracking-wider">Artikel</div>
-                  <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-theme transition line-clamp-2">
+                <div class="p-8 flex flex-col flex-1 relative z-10 bg-white/50 dark:bg-zinc-950/50">
+                  <div class="text-[11px] font-extrabold text-theme mb-3 uppercase tracking-widest">{t('article_badge')}</div>
+                  <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 group-hover:text-theme transition-colors line-clamp-2 leading-tight">
                     {post.title}
                   </h3>
-                  <p class="text-slate-600 dark:text-slate-400 text-sm line-clamp-3 mb-6 flex-1">
-                    {post.content ? post.content.replace(/<[^>]*>?/gm, '') : 'Tidak ada ringkasan...'}
+                  <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-3 mb-8 flex-1">
+                    {post.content ? post.content.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...' : t('no_summary')}
                   </p>
-                  <div class="text-xs text-slate-400 dark:text-slate-500 font-medium pt-4 border-t border-slate-100 dark:border-slate-800">
-                    {new Date(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  <div class="flex items-center justify-between text-xs font-semibold pt-6 border-t border-slate-200 dark:border-zinc-800">
+                    <span class="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                      {new Date(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                    <span class="text-theme flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 transform duration-300">
+                      Baca <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </span>
                   </div>
                 </div>
               </a>
@@ -299,24 +298,18 @@ app.get('/', async (c) => {
 app.get('/read/:slug', async (c) => {
   const slug = c.req.param('slug')
   
-  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings").all()
+  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings WHERE tenant_id = ?").bind(c.get("tenantId")).all()
   const settings = rawSettings.reduce((acc: any, curr: any) => { acc[curr.key] = curr.value; return acc }, {})
-  const siteName = settings['siteName'] || 'Nuansa Web'
+  const siteName = 'Nuansa Network'
   const primaryColor = settings['primaryColor'] || '#3b82f6'
 
-  let adsenseId = ''
-  try {
-    const { results: masterSettings } = await c.env.MASTER_DB.prepare("SELECT * FROM settings WHERE key = 'adsense_master_id'").all()
-    if (masterSettings && masterSettings.length > 0) {
-      adsenseId = masterSettings[0].value as string
-    }
-  } catch (e) {}
+  const adsenseId = await getAdsenseId(c, settings)
 
-  const post: any = await c.env.DB.prepare("SELECT * FROM posts WHERE slug = ?").bind(slug).first()
+  const post: any = await c.env.DB.prepare("SELECT * FROM posts WHERE slug = ? AND tenant_id = ?").bind(slug, c.get("tenantId")).first()
 
   if (!post) {
     return c.html(
-      <Layout title={`Tidak Ditemukan - ${siteName}`} siteName={siteName} primaryColor={primaryColor}>
+      <Layout title={`Tidak Ditemukan - ${siteName}`} siteName={siteName} primaryColor={primaryColor} customThemeHtml={settings['customThemeHtml']}>
         <div class="max-w-2xl mx-auto px-6 py-32 text-center">
           <h1 class="text-4xl font-bold text-slate-900 mb-4">404 - Halaman Tidak Ditemukan</h1>
           <p class="text-slate-600 mb-8">Artikel yang Anda cari mungkin telah dihapus atau dipindahkan.</p>
@@ -349,10 +342,13 @@ app.get('/read/:slug', async (c) => {
   }
 
   const price = post.price || 0
+  
+  let metaDescription = post.content ? post.content.replace(/<[^>]*>?/gm, '').substring(0, 160).trim() + '...' : '';
+  let ogImage = post.cover_image || '';
 
   return c.html(
-    <Layout title={`${post.title} - ${siteName}`} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId}>
-      <article class="max-w-3xl mx-auto px-6 py-16">
+    <Layout title={`${post.title} - ${siteName}`} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId} customThemeHtml={settings['customThemeHtml']} description={metaDescription} image={ogImage}>
+      <article class="max-w-4xl mx-auto px-6 py-20 fade-in-up">
         <a href="/" class="inline-flex items-center text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-theme dark:hover:text-theme transition mb-10">
           &larr; Kembali ke Daftar Artikel
         </a>
@@ -384,7 +380,7 @@ app.get('/read/:slug', async (c) => {
                 <p class="text-slate-500 dark:text-slate-400 text-sm mb-2">Anda membaca pratinjau singkat. Beli akses untuk membaca artikel lengkap ini.</p>
                 <p class="text-2xl font-extrabold text-theme mb-6">Rp {price.toLocaleString('id-ID')}</p>
                 <div class="space-y-3">
-                  <form action="/api/grant-access" method="POST">
+                  <form action="/api/grant-access" method="post">
                     <input type="hidden" name="post_id" value={post.id} />
                     <input type="hidden" name="slug" value={post.slug} />
                     <button type="submit" class="w-full bg-theme hover:opacity-90 text-white font-semibold py-3 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
@@ -423,31 +419,25 @@ app.post('/api/grant-access', async (c) => {
 
 
 app.get('/katalog', async (c) => {
-  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings").all()
+  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings WHERE tenant_id = ?").bind(c.get("tenantId")).all()
   const settings = rawSettings.reduce((acc: any, curr: any) => { acc[curr.key] = curr.value; return acc }, {})
-  const siteName = settings['siteName'] || 'Nuansa Web'
+  const siteName = 'Nuansa Network'
   const primaryColor = settings['primaryColor'] || '#3b82f6'
 
   // Pastikan tabel products ada (jika tenant belum update, tangani error)
-  let products = []
+  let products: any[] = []
   try {
-    const { results } = await c.env.DB.prepare("SELECT * FROM products ORDER BY created_at DESC").all()
-    products = results
+    const { results } = await c.env.DB.prepare("SELECT * FROM products WHERE tenant_id = ? ORDER BY created_at DESC").bind(c.get("tenantId")).all()
+    products = results as any[]
   } catch (e) {
     // Tabel belum dibuat atau error
     products = []
   }
 
-  let adsenseId = ''
-  try {
-    const { results: masterSettings } = await c.env.MASTER_DB.prepare("SELECT * FROM settings WHERE key = 'adsense_master_id'").all()
-    if (masterSettings && masterSettings.length > 0) {
-      adsenseId = masterSettings[0].value as string
-    }
-  } catch (e) {}
+  const adsenseId = await getAdsenseId(c, settings)
 
   return c.html(
-    <Layout title={`Katalog Produk - ${siteName}`} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId}>
+    <Layout title={`Katalog Produk - ${siteName}`} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId} customThemeHtml={settings['customThemeHtml']}>
       <div class="max-w-5xl mx-auto px-6 py-16">
         <header class="text-center mb-16">
           <h1 class="text-4xl font-extrabold text-slate-900 dark:text-white mb-4">Katalog Kami</h1>
@@ -517,16 +507,16 @@ app.post('/api/order', async (c) => {
     const waUrl = body['wa_url'] as string
 
     await c.env.DB.prepare(
-      "INSERT INTO orders (id, product_id, customer_name, customer_phone, quantity, total_price, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')"
+      "INSERT INTO orders (id, tenant_id, product_id, customer_name, customer_phone, quantity, total_price, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')"
     ).bind(crypto.randomUUID(), productId, customerName, customerPhone, quantity, totalPrice).run()
 
     // Kirim notifikasi Telegram
     c.executionCtx.waitUntil((async () => {
       try {
-        const product: any = await c.env.DB.prepare("SELECT name FROM products WHERE id = ?").bind(productId).first()
+        const product: any = await c.env.DB.prepare("SELECT name FROM products WHERE id = ? AND tenant_id = ?").bind(productId, c.get("tenantId")).first()
         const productName = product?.name || 'Produk'
         
-        const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings WHERE key IN ('telegram_bot_token', 'telegram_chat_id')").all()
+        const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings WHERE key IN ('telegram_bot_token', 'telegram_chat_id') AND tenant_id = ?").bind(c.get("tenantId")).all()
         const settings = rawSettings.reduce((acc: any, curr: any) => { acc[curr.key] = curr.value; return acc }, {})
         const token = settings['telegram_bot_token']
         const chatId = settings['telegram_chat_id']
@@ -555,16 +545,12 @@ app.post('/api/order', async (c) => {
 
 // Katalog Kursus
 app.get('/belajar', async (c) => {
-  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings").all()
+  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings WHERE tenant_id = ?").bind(c.get("tenantId")).all()
   const settings = rawSettings.reduce((acc: any, curr: any) => { acc[curr.key] = curr.value; return acc }, {})
-  const siteName = settings['siteName'] || 'Nuansa Web'
+  const siteName = 'Nuansa Network'
   const primaryColor = settings['primaryColor'] || '#3b82f6'
 
-  let adsenseId = ''
-  try {
-    const { results: ms } = await c.env.MASTER_DB.prepare("SELECT * FROM settings WHERE key = 'adsense_master_id'").all()
-    if (ms?.length) adsenseId = ms[0].value as string
-  } catch(e) {}
+  const adsenseId = await getAdsenseId(c, settings)
 
   let courses: any[] = []
   try {
@@ -575,7 +561,7 @@ app.get('/belajar', async (c) => {
   } catch(e) {}
 
   return c.html(
-    <Layout title={`Belajar - ${siteName}`} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId}>
+    <Layout title={`Belajar - ${siteName}`} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId} customThemeHtml={settings['customThemeHtml']}>
       <section class="bg-theme text-white py-20 text-center px-6">
         <div class="max-w-3xl mx-auto">
           <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 text-sm font-medium mb-6">
@@ -633,30 +619,26 @@ app.get('/belajar', async (c) => {
 // Detail Kursus
 app.get('/belajar/:slug', async (c) => {
   const slug = c.req.param('slug')
-  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings").all()
+  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings WHERE tenant_id = ?").bind(c.get("tenantId")).all()
   const settings = rawSettings.reduce((acc: any, curr: any) => { acc[curr.key] = curr.value; return acc }, {})
-  const siteName = settings['siteName'] || 'Nuansa Web'
+  const siteName = 'Nuansa Network'
   const primaryColor = settings['primaryColor'] || '#3b82f6'
 
-  let adsenseId = ''
-  try {
-    const { results: ms } = await c.env.MASTER_DB.prepare("SELECT * FROM settings WHERE key = 'adsense_master_id'").all()
-    if (ms?.length) adsenseId = ms[0].value as string
-  } catch(e) {}
+  const adsenseId = await getAdsenseId(c, settings)
 
-  const course: any = await c.env.DB.prepare("SELECT * FROM courses WHERE slug = ? AND is_published = 1").bind(slug).first()
+  const course: any = await c.env.DB.prepare("SELECT * FROM courses WHERE slug = ? AND is_published = 1 AND tenant_id = ?").bind(slug, c.get("tenantId")).first()
   if (!course) return c.redirect('/belajar')
 
   const { results: lessons } = await c.env.DB.prepare(
     "SELECT id, title, order_index, is_preview FROM lessons WHERE course_id = ? ORDER BY order_index ASC"
-  ).bind(course.id).all()
+  ).bind(course.id, c.get("tenantId")).all()
 
   // Cek enrollment cookie
   const enrollToken = getCookie(c, `enroll_${course.id}`)
   const isEnrolled = course.price === 0 || (enrollToken && enrollToken.startsWith(`enrolled_${course.id}`))
 
   return c.html(
-    <Layout title={`${course.title} - ${siteName}`} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId}>
+    <Layout title={`${course.title} - ${siteName}`} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId} customThemeHtml={settings['customThemeHtml']}>
       <div class="max-w-4xl mx-auto px-6 py-16">
         <a href="/belajar" class="inline-flex items-center text-sm text-slate-500 hover:text-theme transition mb-8">
           &larr; Semua Kursus
@@ -716,7 +698,7 @@ app.get('/belajar/:slug', async (c) => {
                   )}
                 </div>
               ) : (
-                <form action="/api/enroll" method="POST">
+                <form action="/api/enroll" method="post">
                   <input type="hidden" name="course_id" value={course.id} />
                   <input type="hidden" name="course_slug" value={course.slug} />
                   <input type="hidden" name="price" value={course.price} />
@@ -741,20 +723,21 @@ app.get('/belajar/:slug/:lessonId', async (c) => {
   const slug = c.req.param('slug')
   const lessonId = c.req.param('lessonId')
 
-  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings").all()
+  const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings WHERE tenant_id = ?").bind(c.get("tenantId")).all()
   const settings = rawSettings.reduce((acc: any, curr: any) => { acc[curr.key] = curr.value; return acc }, {})
-  const siteName = settings['siteName'] || 'Nuansa Web'
+  const siteName = 'Nuansa Network'
   const primaryColor = settings['primaryColor'] || '#3b82f6'
+  const adsenseId = await getAdsenseId(c, settings)
 
-  const course: any = await c.env.DB.prepare("SELECT * FROM courses WHERE slug = ?").bind(slug).first()
+  const course: any = await c.env.DB.prepare("SELECT * FROM courses WHERE slug = ?").bind(slug, c.get("tenantId")).first()
   if (!course) return c.redirect('/belajar')
 
-  const lesson: any = await c.env.DB.prepare("SELECT * FROM lessons WHERE id = ? AND course_id = ?").bind(lessonId, course.id).first()
+  const lesson: any = await c.env.DB.prepare("SELECT * FROM lessons WHERE id = ? AND course_id = ? AND tenant_id = ?").bind(lessonId, course.id, c.get("tenantId")).first()
   if (!lesson) return c.redirect(`/belajar/${slug}`)
 
   const { results: allLessons } = await c.env.DB.prepare(
     "SELECT id, title, order_index, is_preview FROM lessons WHERE course_id = ? ORDER BY order_index ASC"
-  ).bind(course.id).all()
+  ).bind(course.id, c.get("tenantId")).all()
 
   const enrollToken = getCookie(c, `enroll_${course.id}`)
   const isEnrolled = course.price === 0 || (enrollToken && enrollToken.startsWith(`enrolled_${course.id}`))
@@ -768,7 +751,7 @@ app.get('/belajar/:slug/:lessonId', async (c) => {
   const nextLesson = currentIdx < allLessons.length - 1 ? (allLessons as any[])[currentIdx + 1] : null
 
   return c.html(
-    <Layout title={`${lesson.title} - ${course.title} | ${siteName}`} siteName={siteName} primaryColor={primaryColor}>
+    <Layout title={`${lesson.title} - ${course.title} | ${siteName}`} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId} customThemeHtml={settings['customThemeHtml']}>
       <div class="max-w-5xl mx-auto px-6 py-10 grid md:grid-cols-4 gap-8">
         {/* Sidebar Daftar Materi */}
         <aside class="md:col-span-1">
@@ -839,7 +822,7 @@ app.post('/api/enroll', async (c) => {
 
     // Simpan enrollment ke DB
     await c.env.DB.prepare(
-      "INSERT INTO enrollments (id, course_id, student_email, access_token) VALUES (?, ?, ?, ?)"
+      "INSERT INTO enrollments (id, tenant_id, course_id, student_email, access_token) VALUES (?, ?, ?, ?, ?)"
     ).bind(crypto.randomUUID(), courseId, email, token).run()
 
     // Set cookie akses (30 hari)
@@ -853,10 +836,10 @@ app.post('/api/enroll', async (c) => {
     // Kirim notifikasi Telegram
     c.executionCtx.waitUntil((async () => {
       try {
-        const course: any = await c.env.DB.prepare("SELECT title FROM courses WHERE id = ?").bind(courseId).first()
+        const course: any = await c.env.DB.prepare("SELECT title FROM courses WHERE id = ? AND tenant_id = ?").bind(courseId, c.get("tenantId")).first()
         const courseTitle = course?.title || 'Kursus'
 
-        const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings WHERE key IN ('telegram_bot_token', 'telegram_chat_id')").all()
+        const { results: rawSettings } = await c.env.DB.prepare("SELECT * FROM settings WHERE key IN ('telegram_bot_token', 'telegram_chat_id') AND tenant_id = ?").bind(c.get("tenantId")).all()
         const settings = rawSettings.reduce((acc: any, curr: any) => { acc[curr.key] = curr.value; return acc }, {})
         const botToken = settings['telegram_bot_token']
         const chatId = settings['telegram_chat_id']
@@ -879,6 +862,75 @@ app.post('/api/enroll', async (c) => {
     console.error(e)
     return c.redirect('/belajar')
   }
+})
+
+// Rute Nuansa Commerce (Katalog Produk)
+app.get('/katalog', async (c) => {
+  let siteName = 'Nuansa Network'
+  let primaryColor = '#2563eb'
+  const settingsObj: Record<string, string> = {}
+  try {
+    const { results } = await c.env.DB.prepare("SELECT * FROM settings WHERE tenant_id = ?").bind(c.get("tenantId")).all()
+    if (results) {
+      results.forEach((row: any) => {
+        settingsObj[row.key] = row.value
+      })
+      if (settingsObj['site_name']) siteName = settingsObj['site_name']
+      if (settingsObj['primary_color']) primaryColor = settingsObj['primary_color']
+    }
+  } catch(e) {}
+
+  const adsenseId = await getAdsenseId(c, settingsObj)
+  const { lang, t } = getLangContext(c)
+
+  // Mock Produk (Nuansa Commerce)
+  const products = [
+    { id: 1, name: 'Ebook: Edge Computing 101', price: 'Rp 99.000', desc: 'Panduan lengkap memahami arsitektur Edge untuk pemula.', type: 'Digital' },
+    { id: 2, name: 'Template: Nuansa SaaS', price: 'Rp 299.000', desc: 'Boilerplate SaaS siap pakai dengan UI modern dan terintegrasi.', type: 'Digital' },
+    { id: 3, name: 'Konsultasi: Arsitektur Cloud', price: 'Rp 1.500.000', desc: 'Sesi konsultasi 1 jam bersama expert arsitektur sistem terdistribusi.', type: 'Jasa' }
+  ]
+
+  return c.html(
+    <Layout title={`Katalog Produk - ${siteName}`} siteName={siteName} primaryColor={primaryColor} adsenseId={adsenseId} lang={lang} t={t} customThemeHtml={settingsObj['customThemeHtml']}>
+      <section class="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-16 text-center px-6 transition-colors duration-300">
+        <h1 class="text-3xl md:text-4xl font-extrabold mb-4 text-slate-900 dark:text-white">Nuansa Commerce</h1>
+        <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+          Katalog ini mendemonstrasikan "Vertical Engine" untuk E-Commerce (Lapisan 5). Tenant dapat berjualan produk digital dan jasa.
+        </p>
+      </section>
+
+      <section class="max-w-5xl mx-auto px-6 py-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {products.map(prod => (
+            <div class="glassmorphism rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl dark:hover:shadow-slate-900/50 transition-all duration-300 flex flex-col h-full bg-white dark:bg-slate-800">
+              <div class="h-40 bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center border-b border-slate-200 dark:border-slate-700 relative overflow-hidden">
+                <svg class="w-12 h-12 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+                <div class="absolute top-4 right-4 bg-theme text-white text-[10px] font-bold px-2 py-1 uppercase rounded-full">
+                  {prod.type}
+                </div>
+              </div>
+              <div class="p-6 flex flex-col flex-1 relative z-10">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2 leading-tight">
+                  {prod.name}
+                </h3>
+                <p class="text-slate-600 dark:text-slate-400 text-sm mb-4 flex-1">
+                  {prod.desc}
+                </p>
+                <div class="flex items-center justify-between mt-auto">
+                  <span class="text-lg font-bold text-slate-900 dark:text-white">{prod.price}</span>
+                  <button type="button" onclick="alert('Checkout module (Edge Stripe/Xendit integration) requires API Key.')" class="bg-theme text-white hover:opacity-90 transition px-4 py-2 rounded-xl text-sm shadow-sm font-medium">
+                    Beli
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </Layout>
+  )
 })
 
 // Rute Registrasi & Login
@@ -953,7 +1005,7 @@ app.get('/register', (c) => {
                 <h3 class="text-2xl font-bold mb-2">Daftar Akun Klien</h3>
                 <p class="text-sm text-slate-500 mb-8">Buat ruang kerja (Tenant) instan Anda sendiri.</p>
                 
-                <form method="POST" action="/api/tenants" class="space-y-6">
+                <form method="post" action="/api/tenants" class="space-y-6">
                   <div>
                     <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Nama Perusahaan / Website</label>
                     <input type="text" name="name" placeholder="Misal: PT Maju Bersama" required class="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 transition shadow-inner" />
@@ -964,7 +1016,7 @@ app.get('/register', (c) => {
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Kata Sandi (Password)</label>
-                    <input type="password" name="password" placeholder="Min. 8 karakter" required minlength="8" class="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 transition shadow-inner" />
+                    <input type="password" name="password" placeholder="Min. 8 karakter" required minLength={8} class="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 transition shadow-inner" />
                   </div>
                   <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-lg shadow-blue-500/20 mt-4">
                     Mulai Sekarang &rarr;
@@ -1012,9 +1064,20 @@ app.post('/api/tenants', async (c) => {
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     const hashedPassword = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
 
+    const { results: existingUsers } = await c.env.MASTER_DB.prepare(
+      "SELECT id FROM users WHERE email = ?"
+    ).bind(email).all();
+
+    if (existingUsers && existingUsers.length > 0) {
+      if (contentType.includes('application/x-www-form-urlencoded')) {
+        return c.html(<html lang="id"><head><script src="https://cdn.tailwindcss.com"></script></head><body class="flex items-center justify-center min-h-screen"><div class="p-8 bg-red-50 text-red-600 rounded-xl">Email sudah terdaftar. Silakan login ke Nuansa Studio untuk membuat website tambahan. <a href="/login" class="underline font-bold">Ke Halaman Login</a></div></body></html>)
+      }
+      return c.text('Email already registered', 400)
+    }
+
     await c.env.MASTER_DB.prepare(
-      "INSERT INTO tenants (id, name, plan, created_at) VALUES (?, ?, ?, ?)"
-    ).bind(tenantId, name, 'gratis', nowMs).run()
+      "INSERT INTO tenants (id, name, owner_id, plan, created_at) VALUES (?, ?, ?, ?, ?)"
+    ).bind(tenantId, name, userId, 'gratis', nowMs).run()
 
     await c.env.MASTER_DB.prepare(
       "INSERT INTO users (id, tenant_id, email, password, role, created_at) VALUES (?, ?, ?, ?, ?, ?)"

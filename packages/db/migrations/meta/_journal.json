@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1789964329483,
-      "tag": "0000_workable_harry_osborn",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1790043741719,
-      "tag": "0001_safe_mysterio",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1790128760250,
-      "tag": "0002_organic_marvex",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1790137345794,
-      "tag": "0003_robust_victor_mancha",
+      "when": 1790145332981,
+      "tag": "0000_orange_kinsey_walden",
       "breakpoints": true
     }
   ]

@@ -1,0 +1,1 @@
+UPDATE settings SET value = 'Nuansa Network' WHERE key='siteName'

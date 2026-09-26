@@ -14,5 +14,5 @@ CREATE TABLE IF NOT EXISTS `settings` (
 );
 
 -- Insert Default Settings
-INSERT OR IGNORE INTO `settings` (`key`, `value`) VALUES ('siteName', 'Nuansa Omni-Platform');
+INSERT OR IGNORE INTO `settings` (`key`, `value`) VALUES ('siteName', 'Nuansa Network');
 INSERT OR IGNORE INTO `settings` (`key`, `value`) VALUES ('primaryColor', '#38bdf8');

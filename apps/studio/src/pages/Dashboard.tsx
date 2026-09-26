@@ -33,7 +33,7 @@ export const Dashboard: FC<{
           </div>
           <p class="text-brand-400 font-bold font-mono uppercase tracking-wider">Grafik Analisis Lalu Lintas (Segera Hadir)</p>
           <p class="text-sm text-slate-500 mt-2 text-center max-w-sm">
-            Data analitik edge-native dari Cloudflare Workers Analytics Engine akan divisualisasikan di sini.
+            Data analitik edge-native akan divisualisasikan di sini.
           </p>
         </div>
 

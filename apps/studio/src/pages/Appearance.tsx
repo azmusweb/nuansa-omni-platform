@@ -2,7 +2,7 @@ import type { FC } from 'hono/jsx'
 import { Layout } from '../components/Layout'
 
 export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ currentPath, settings = {} }) => {
-  const siteName = settings['siteName'] || 'Nuansa Omni-Platform'
+  const siteName = settings['siteName'] || 'Nuansa Network'
   const primaryColor = settings['primaryColor'] || '#3b82f6'
   const fontFamily = settings['fontFamily'] || 'Inter'
   const headerLayout = settings['headerLayout'] || 'left' // left, center
@@ -10,10 +10,10 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
 
   return (
     <Layout title="Nuansa Architect (Visual Builder)" currentPath={currentPath}>
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-10rem)]">
+      <div class="flex flex-col gap-6">
         
-        {/* Panel Kontrol Builder (Sidebar) */}
-        <div class="col-span-1 bg-dark-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl shadow-xl flex flex-col overflow-hidden">
+        {/* Panel Kontrol Builder (Header) */}
+        <div class="bg-dark-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl shadow-xl flex flex-col overflow-hidden">
           
           <div class="p-4 border-b border-slate-700/50 shrink-0 bg-dark-900 flex justify-between items-center">
             <h3 class="text-white font-semibold flex items-center gap-2">
@@ -31,6 +31,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
                 <button type="button" class="flex-1 py-3 text-white border-b-2 border-brand-500" id="tab-global" onclick="switchTab('global')">Global</button>
                 <button type="button" class="flex-1 py-3 hover:text-white transition" id="tab-header" onclick="switchTab('header')">Header</button>
                 <button type="button" class="flex-1 py-3 hover:text-white transition" id="tab-footer" onclick="switchTab('footer')">Footer</button>
+                <button type="button" class="flex-1 py-3 hover:text-white transition" id="tab-html" onclick="switchTab('html')">HTML</button>
               </div>
 
               {/* Panel Konten */}
@@ -155,6 +156,21 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
                   </div>
                 </div>
 
+                {/* HTML TAB */}
+                <div id="panel-html" class="space-y-5 hidden">
+                  <div>
+                    <label class="block text-brand-400 text-xs font-semibold uppercase tracking-wider mb-2">Editor HTML Kustom</label>
+                    <p class="text-[10px] text-slate-400 mb-3">Jika ini diisi, pengaturan Global/Header/Footer di atas akan diabaikan. Gunakan <code>{`{{content}}`}</code> untuk meletakkan konten utama halaman. Variabel: <code>{`{{siteName}}`}</code>, <code>{`{{title}}`}</code>, <code>{`{{primaryColor}}`}</code>.</p>
+                    <textarea 
+                      name="customThemeHtml" 
+                      id="input-customThemeHtml"
+                      class="w-full h-80 bg-dark-950 border border-slate-700 rounded-xl p-4 text-emerald-400 font-mono text-xs focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition whitespace-pre overflow-x-auto custom-scrollbar"
+                      placeholder={`<!DOCTYPE html>\n<html lang="id">\n<head>\n  <title>{{title}}</title>\n  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n  <script src="https://cdn.tailwindcss.com"></script>\n  <style>\n    :root { --primary: {{primaryColor}}; }\n  </style>\n</head>\n<body>\n  <header>\n    <h1>{{siteName}}</h1>\n  </header>\n  <main>\n    {{content}}\n  </main>\n  <footer>\n    &copy; 2026 {{siteName}}\n  </footer>\n</body>\n</html>`}
+                      oninput="triggerUpdate()"
+                    >{settings['customThemeHtml'] || ''}</textarea>
+                  </div>
+                </div>
+
               </div>
             </div>
 
@@ -168,7 +184,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
         </div>
 
         {/* Visual Preview Area (DOM Iframe-like) */}
-        <div class="col-span-1 lg:col-span-3 bg-dark-900 border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        <div class="bg-dark-900 border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col min-h-[600px]">
           <div class="bg-dark-800 px-4 py-3 flex items-center justify-between border-b border-slate-700/50 shrink-0">
             <div class="flex gap-1.5">
               <div class="w-3 h-3 rounded-full bg-slate-600"></div>
@@ -240,7 +256,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
                 )}
                 
                 <div class="text-sm">
-                  &copy; 2026 {siteName}. All rights reserved. Built with Nuansa Omni-Platform.
+                  &copy; 2026 {siteName}. All rights reserved. Built with Nuansa Network.
                 </div>
               </footer>
 
@@ -253,7 +269,7 @@ export const Appearance: FC<{ currentPath: string, settings?: any }> = ({ curren
       <script dangerouslySetInnerHTML={{__html: `
         // Tab Switcher
         function switchTab(tab) {
-          ['global', 'header', 'footer'].forEach(t => {
+          ['global', 'header', 'footer', 'html'].forEach(t => {
             document.getElementById('panel-' + t).classList.add('hidden');
             document.getElementById('panel-' + t).classList.remove('block');
             

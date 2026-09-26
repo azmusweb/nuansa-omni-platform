@@ -2,7 +2,7 @@
   "name": "nuansa-omni-platform",
   "version": "1.0.0",
   "private": true,
-  "description": "Nuansa Omni-Platform Monorepo",
+  "description": "Nuansa Network Monorepo",
   "workspaces": [
     "apps/*",
     "packages/*"

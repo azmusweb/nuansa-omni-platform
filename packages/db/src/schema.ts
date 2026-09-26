@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm';
 export const tenants = sqliteTable('tenants', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
+  ownerId: text('owner_id'),
   plan: text('plan').notNull().default('gratis'), // gratis, pro, enterprise
   status: text('status').notNull().default('active'), // active, suspended
   expiresAt: integer('expires_at', { mode: 'timestamp' }), // nullable
@@ -21,6 +22,7 @@ export const users = sqliteTable('users', {
 
 export const posts = sqliteTable('posts', {
   id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull(),
   title: text('title').notNull(),
   slug: text('slug').notNull().unique(),
   content: text('content'),
@@ -34,6 +36,7 @@ export const posts = sqliteTable('posts', {
 
 export const products = sqliteTable('products', {
   id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull(),
   name: text('name').notNull(),
   price: integer('price').notNull(),
   description: text('description'),
@@ -71,6 +74,7 @@ export const transactions = sqliteTable('transactions', {
 
 export const media = sqliteTable('media', {
   id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull(),
   filename: text('filename').notNull(),
   url: text('url').notNull(),
   type: text('type').notNull(), // 'image/png', 'image/jpeg', etc.
@@ -81,6 +85,7 @@ export const media = sqliteTable('media', {
 
 export const analytics = sqliteTable('analytics', {
   id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull(),
   path: text('path').notNull().unique(),
   views: integer('views').notNull().default(1),
   lastVisitedAt: integer('last_visited_at', { mode: 'timestamp' }).notNull().default(sql`(strftime('%s', 'now'))`),
@@ -88,6 +93,7 @@ export const analytics = sqliteTable('analytics', {
 
 export const orders = sqliteTable('orders', {
   id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull(),
   productId: text('product_id').notNull(),
   customerName: text('customer_name').notNull(),
   customerPhone: text('customer_phone').notNull(),
@@ -100,6 +106,7 @@ export const orders = sqliteTable('orders', {
 // Nuansa Learn
 export const courses = sqliteTable('courses', {
   id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull(),
   title: text('title').notNull(),
   slug: text('slug').notNull().unique(),
   description: text('description'),
@@ -111,6 +118,7 @@ export const courses = sqliteTable('courses', {
 
 export const lessons = sqliteTable('lessons', {
   id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull(),
   courseId: text('course_id').notNull(),
   title: text('title').notNull(),
   content: text('content'),
@@ -121,6 +129,7 @@ export const lessons = sqliteTable('lessons', {
 
 export const enrollments = sqliteTable('enrollments', {
   id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull(),
   courseId: text('course_id').notNull(),
   studentEmail: text('student_email').notNull(),
   accessToken: text('access_token').notNull().unique(),
@@ -129,5 +138,6 @@ export const enrollments = sqliteTable('enrollments', {
 
 export const settings = sqliteTable('settings', {
   key: text('key').primaryKey(),
+  tenantId: text('tenant_id').notNull(),
   value: text('value').notNull(),
 });

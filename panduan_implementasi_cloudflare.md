@@ -1,4 +1,4 @@
-# Panduan Implementasi Nuansa Omni-Platform (Dasbor Cloudflare)
+# Panduan Implementasi Nuansa Network (Dasbor Cloudflare)
 
 Dokumen ini adalah **Tutorial Sekaligus Pelacak Progres (Tracker)** yang dirancang khusus untuk Anda yang mengeksekusi proyek ini langsung dari Dasbor Cloudflare (tanpa menggunakan `wrangler` CLI lokal).
 
