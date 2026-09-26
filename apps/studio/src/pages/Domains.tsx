@@ -91,10 +91,10 @@ export const Domains = ({ currentPath, domains = [], settings = {} }: { currentP
                             <p class="text-xs text-gray-500 mt-0.5">Ditambahkan pada {new Date(domain.created_at).toLocaleDateString('id-ID')}</p>
                           </div>
                           <div class="flex items-center gap-4">
-                            <span class={\`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider \${domain.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}\`}>
+                            <span class={"px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider " + (domain.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}>
                               {domain.is_active ? 'Aktif' : 'Verifikasi'}
                             </span>
-                            <button onclick={\`deleteDomain('\${domain.id}')\`} class="text-gray-400 hover:text-red-500 transition" title="Hapus Domain">
+                            <button onclick={"deleteDomain('" + domain.id + "')"} class="text-gray-400 hover:text-red-500 transition" title="Hapus Domain">
                               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
                           </div>
