@@ -158,8 +158,7 @@ export const Domains = ({ currentPath, domains = [], settings = {} }: { currentP
         </div>
       </div>
 
-      {html\`
-      <script>
+      <script dangerouslySetInnerHTML={{ __html: `
         document.getElementById('addDomainForm').addEventListener('submit', async (e) => {
           e.preventDefault();
           const formData = new FormData(e.target);
@@ -205,8 +204,7 @@ export const Domains = ({ currentPath, domains = [], settings = {} }: { currentP
             }
           }
         }
-      </script>
-      \`}
+      `}} />
     </Layout>
   )
 }
