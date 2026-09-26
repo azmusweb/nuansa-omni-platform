@@ -349,16 +349,23 @@ export const WritePost: FC<{ currentPath: string, post?: any }> = ({ currentPath
             toolbar: 'undo redo | blocks | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | removeformat | fullscreen',
             toolbar_mode: 'sliding',
             skin: isDarkMode ? 'oxide-dark' : 'oxide',
-            content_css: isDarkMode ? 'dark' : 'default',
+            content_css: 'default',
             content_style: [
               'body {',
               '  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;',
               '  font-size: 16px;',
               '  line-height: 1.6;',
+              '  color: #111111 !important;',
+              '  background: #ffffff !important;',
               '  padding: 20px 28px;',
               '  max-width: 780px;',
               '  margin: 0 auto;',
-              '}'
+              '}',
+              'h1, h2, h3, h4, h5, h6 { color: #0a0a0a !important; font-weight: 700; line-height: 1.3; margin-top: 1.5em; }',
+              'p, ul, ol, li, table, td, th { color: #111111 !important; }',
+              'a { color: #2563eb !important; }',
+              'blockquote { border-left: 4px solid #3b82f6; margin: 1.5em 0; padding: 12px 20px; background: #eff6ff !important; color: #1e3a8a !important; font-style: italic; border-radius: 0 8px 8px 0; }',
+              'code { background: #f1f5f9 !important; color: #0f172a !important; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }'
             ].join(' '),
             setup: function(editor) {
               editor.on('init', function() {
