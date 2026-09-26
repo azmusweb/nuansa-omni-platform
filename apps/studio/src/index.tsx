@@ -2,7 +2,9 @@ import { Hono } from 'hono'
 import { jsxRenderer } from 'hono/jsx-renderer'
 import { Dashboard } from './pages/Dashboard'
 import { Posts } from './pages/Posts'
+import { WritePost } from './pages/WritePost'
 import { Appearance } from './pages/Appearance'
+import { Gallery } from './pages/Gallery'
 import { Vault } from './pages/Vault'
 import { Settings } from './pages/Settings'
 import { Redirects } from './pages/Redirects'
@@ -14,8 +16,9 @@ import { Orders } from './pages/Orders'
 import { Learn } from './pages/Learn'
 import { Lessons } from './pages/Lessons'
 import { Login } from './pages/Login'
+import { Domains } from './pages/Domains'
 import { createDb, tenants, users, transactions, products } from '@nuansa/db'
-import { desc } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import type { FC } from 'hono/jsx'
 import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
 import { sign, verify } from 'hono/jwt'
@@ -39,15 +42,39 @@ app.use('*', async (c, next) => {
 
   const token = getCookie(c, 'auth_token')
   if (!token) {
+    console.log('Middleware redirect: No auth_token cookie')
     return c.redirect('/login')
   }
 
   try {
-    const payload = await verify(token, JWT_SECRET)
-    c.set('user', payload)
+    const payload = await verify(token, JWT_SECRET, 'HS256') as any
+    
+    // Default to the tenant from JWT
+    let activeTenantId = payload.tenantId
+
+    // But if they have an active_tenant cookie, use that
+    const activeCookie = getCookie(c, 'active_tenant')
+    if (activeCookie) activeTenantId = activeCookie
+
+    // Fetch all tenants owned by this user (or where they are the primary tenant)
+    const { results: myTenants } = await c.env.MASTER_DB.prepare(
+      "SELECT id, name FROM tenants WHERE owner_id = ? OR id = ?"
+    ).bind(payload.userId || '', payload.tenantId || '').all()
+    
+    // Ensure activeTenantId is valid for this user
+    const validTenant = myTenants.find((t: any) => t.id === activeTenantId)
+    if (!validTenant && myTenants.length > 0) {
+      activeTenantId = (myTenants[0] as any).id
+    }
+
+    c.set('user', { ...payload, tenantId: activeTenantId })
+    c.set('myTenants', myTenants || [])
+    c.set('activeTenant', validTenant || (myTenants && myTenants[0]) || null)
+
     return next()
   } catch (e) {
-    deleteCookie(c, 'auth_token')
+    console.error('Middleware redirect: Verify failed', e)
+    deleteCookie(c, 'auth_token', { path: '/' })
     return c.redirect('/login')
   }
 })
@@ -59,13 +86,14 @@ app.get('/', (c) => c.redirect('/dashboard'))
 app.get('/login', (c) => c.html(<Login />))
 
 app.post('/api/login', async (c) => {
-  const body = await c.req.parseBody()
-  const email = (body['email'] as string).toLowerCase()
-  const password = body['password'] as string
+  try {
+    const body = await c.req.parseBody()
+    const email = (body['email'] as string || '').trim().toLowerCase()
+    const password = (body['password'] as string || '').trim()
 
-  if (!email || !password) {
-    return c.html(<Login error="Email dan kata sandi wajib diisi" />)
-  }
+    if (!email || !password) {
+      return c.html(<Login error="Email dan kata sandi wajib diisi" />)
+    }
 
   // Hash password input
   const msgUint8 = new TextEncoder().encode(password)
@@ -73,42 +101,54 @@ app.post('/api/login', async (c) => {
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   const hashedPassword = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
 
-  // Cari user di MASTER_DB dan cek status tenant
-  const { results } = await c.env.MASTER_DB.prepare(
-    "SELECT u.id, u.tenant_id, u.role, u.password, t.status, t.expires_at FROM users u JOIN tenants t ON u.tenant_id = t.id WHERE u.email = ?"
-  ).bind(email).all()
-
-  const user = results[0] as any
+  // Cari user di MASTER_DB
+  const user = await c.env.MASTER_DB.prepare(
+    "SELECT id, tenant_id, role, password FROM users WHERE email = ?"
+  ).bind(email).first<any>()
 
   if (!user || user.password !== hashedPassword) {
     return c.html(<Login error="Email atau kata sandi salah" />)
   }
   
-  if (user.status === 'suspended') {
+  // Cek status tenant
+  const tenant = await c.env.MASTER_DB.prepare(
+    "SELECT status, expires_at FROM tenants WHERE id = ?"
+  ).bind(user.tenant_id).first<any>()
+
+  if (!tenant) {
+    return c.html(<Login error="Data tenant tidak ditemukan." />)
+  }
+  
+  if (tenant.status === 'suspended') {
     return c.html(<Login error="Akun klien ini telah ditangguhkan. Hubungi administrator." />)
   }
 
-  if (user.expires_at && user.expires_at < Date.now()) {
+  if (tenant.expires_at && tenant.expires_at < Date.now()) {
     return c.html(<Login error="Masa aktif akun klien ini telah habis. Hubungi administrator." />)
   }
 
-  // Generate JWT
-  const token = await sign({
-    userId: user.id,
-    tenantId: user.tenant_id,
-    role: user.role,
-    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 // 7 hari
-  }, JWT_SECRET)
+    // Generate JWT
+    const tenantIdentifier = user.tenant_id || user.tenantId || ''
+    const userIdentifier = user.id || user.userId || ''
+    
+    const token = await sign({
+      userId: userIdentifier,
+      tenantId: tenantIdentifier,
+      role: user.role,
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 // 7 hari
+    }, JWT_SECRET, 'HS256')
 
-  setCookie(c, 'auth_token', token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'Lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7
-  })
+    setCookie(c, 'auth_token', token, {
+      httpOnly: true,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7
+    })
 
-  return c.redirect('/dashboard')
+    return c.redirect('/dashboard')
+  } catch (e) {
+    console.error('Login error:', e)
+    return c.html(<Login error="Terjadi kesalahan pada server. Silakan coba lagi nanti." />)
+  }
 })
 
 app.get('/api/logout', (c) => {
@@ -116,21 +156,64 @@ app.get('/api/logout', (c) => {
   return c.redirect('/login')
 })
 
+app.get('/api/me', (c) => {
+  return c.json({
+    user: c.get('user'),
+    myTenants: c.get('myTenants'),
+    activeTenant: c.get('activeTenant')
+  })
+})
+
+app.post('/api/switch-tenant', async (c) => {
+  const body = await c.req.parseBody()
+  const tenantId = body['tenant_id'] as string
+  if (tenantId) {
+    setCookie(c, 'active_tenant', tenantId, {
+      httpOnly: true,
+      secure: c.req.url.startsWith('https://'),
+      sameSite: 'Lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7
+    })
+  }
+  return c.redirect('/dashboard')
+})
+
+app.post('/api/create-tenant', async (c) => {
+  const user = c.get('user') as any
+  const body = await c.req.parseBody()
+  const name = body['name'] as string
+  
+  if (name) {
+    const newTenantId = crypto.randomUUID()
+    await c.env.MASTER_DB.prepare(
+      "INSERT INTO tenants (id, name, owner_id, plan, created_at) VALUES (?, ?, ?, ?, ?)"
+    ).bind(newTenantId, name, user.userId, 'gratis', Date.now()).run()
+    
+    // Auto switch to new tenant
+    setCookie(c, 'active_tenant', newTenantId, {
+      httpOnly: true, secure: true, sameSite: 'Lax', path: '/', maxAge: 60 * 60 * 24 * 7
+    })
+  }
+  return c.redirect('/dashboard')
+})
+
 // --- RUTE HALAMAN UI ---
 
 app.get('/dashboard', async (c) => {
   try {
-    const { results: postCountResult } = await c.env.DB.prepare("SELECT COUNT(*) as count FROM posts").all()
+    const user = c.get('user') as any;
+    const { results: postCountResult } = await c.env.DB.prepare("SELECT COUNT(*) as count FROM posts WHERE tenant_id = ?").bind(user.tenantId).all()
     const postCount = (postCountResult[0] as any)?.count || 0
-    const { results: recentPosts } = await c.env.DB.prepare("SELECT title, created_at FROM posts ORDER BY created_at DESC LIMIT 3").all()
+    const { results: recentPosts } = await c.env.DB.prepare("SELECT title, created_at FROM posts WHERE tenant_id = ? ORDER BY created_at DESC LIMIT 3").bind(user.tenantId).all()
 
     let totalBytes = 0
     let totalViews = 0
     try {
-      const { results: mediaResults } = await c.env.DB.prepare("SELECT SUM(size) as total FROM media").all()
+      const { results: mediaResults } = await c.env.DB.prepare("SELECT SUM(size) as total FROM media WHERE tenant_id = ?").bind(user.tenantId).all()
       totalBytes = (mediaResults[0] as any)?.total || 0
       
-      const { results: viewResults } = await c.env.DB.prepare("SELECT SUM(views) as total FROM analytics").all()
+      const { results: viewResults } = await c.env.DB.prepare("SELECT SUM(views) as total FROM analytics WHERE tenant_id = ?").bind(user.tenantId).all()
       totalViews = (viewResults[0] as any)?.total || 0
     } catch (e) {
       // ignore if tables not ready
@@ -151,16 +234,37 @@ app.get('/dashboard', async (c) => {
 
 app.get('/posts', async (c) => {
   try {
-    const { results } = await c.env.DB.prepare("SELECT * FROM posts ORDER BY created_at DESC").all()
+    const user = c.get('user') as any;
+    const { results } = await c.env.DB.prepare("SELECT * FROM posts WHERE tenant_id = ? ORDER BY created_at DESC").bind(user.tenantId).all()
     return c.html(<Posts currentPath={c.req.path} posts={results} />)
   } catch (e) {
     return c.html(<Posts currentPath={c.req.path} posts={[]} />)
   }
 })
 
+app.get('/posts/new', async (c) => {
+  return c.html(<WritePost currentPath="/posts" />)
+})
+
+app.get('/posts/edit/:id', async (c) => {
+  try {
+    const user = c.get('user') as any;
+    const id = c.req.param('id')
+    const { results } = await c.env.DB.prepare("SELECT * FROM posts WHERE id = ? AND tenant_id = ?").bind(id, user.tenantId).all()
+    const post = results[0]
+    if (!post) {
+      return c.redirect('/posts')
+    }
+    return c.html(<WritePost currentPath="/posts" post={post} />)
+  } catch (e) {
+    return c.redirect('/posts')
+  }
+})
+
 app.get('/appearance', async (c) => {
   try {
-    const { results } = await c.env.DB.prepare("SELECT * FROM settings").all()
+    const user = c.get('user') as any;
+    const { results } = await c.env.DB.prepare("SELECT * FROM settings WHERE tenant_id = ?").bind(user.tenantId).all()
     const settings = results.reduce((acc: any, curr: any) => {
       acc[curr.key] = curr.value
       return acc
@@ -171,13 +275,67 @@ app.get('/appearance', async (c) => {
   }
 })
 
+app.get('/gallery', async (c) => {
+  return c.html(<Gallery currentPath={c.req.path} />)
+})
+
 app.get('/vault', async (c) => {
   try {
-    const { results } = await c.env.DB.prepare("SELECT * FROM media ORDER BY created_at DESC").all()
+    const user = c.get('user') as any;
+    const { results } = await c.env.DB.prepare("SELECT * FROM media WHERE tenant_id = ? ORDER BY created_at DESC").bind(user.tenantId).all()
     return c.html(<Vault currentPath={c.req.path} files={results as any[]} />)
   } catch (e) {
     console.error('Failed to load media from DB:', e)
     return c.html(<Vault currentPath={c.req.path} files={[]} />)
+  }
+})
+
+app.get('/domains', async (c) => {
+  try {
+    const user = c.get('user') as any;
+    const { results } = await c.env.DB.prepare("SELECT * FROM domains WHERE tenant_id = ? ORDER BY created_at DESC").bind(user.tenantId).all()
+    return c.html(<Domains currentPath={c.req.path} domains={results as any[]} />)
+  } catch (e) {
+    console.error('Failed to load domains from DB:', e)
+    return c.html(<Domains currentPath={c.req.path} domains={[]} />)
+  }
+})
+
+app.post('/api/domains', async (c) => {
+  try {
+    const user = c.get('user') as any;
+    const body = await c.req.json()
+    const domain = body.domain?.trim().toLowerCase()
+    
+    if (!domain) {
+      return c.json({ error: 'Domain wajib diisi' }, 400)
+    }
+
+    // Insert domain to master DB
+    await c.env.DB.prepare(
+      "INSERT INTO domains (id, tenant_id, domain, is_active, created_at, updated_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+    ).bind(crypto.randomUUID(), user.tenantId, domain).run()
+
+    return c.json({ success: true })
+  } catch (e: any) {
+    console.error(e)
+    if (e.message?.includes('UNIQUE constraint failed')) {
+      return c.json({ error: 'Domain sudah digunakan' }, 400)
+    }
+    return c.json({ error: 'Terjadi kesalahan pada server' }, 500)
+  }
+})
+
+app.delete('/api/domains/:id', async (c) => {
+  try {
+    const user = c.get('user') as any;
+    const domainId = c.req.param('id')
+    
+    await c.env.DB.prepare("DELETE FROM domains WHERE id = ? AND tenant_id = ?").bind(domainId, user.tenantId).run()
+    
+    return c.json({ success: true })
+  } catch (e) {
+    return c.json({ error: 'Terjadi kesalahan pada server' }, 500)
   }
 })
 
@@ -191,8 +349,9 @@ app.get('/audit', async (c) => {
 
 app.get('/products', async (c) => {
   try {
+    const user = c.get('user') as any;
     const db = createDb(c.env.DB)
-    const allProducts = await db.select().from(products).orderBy(desc(products.createdAt))
+    const allProducts = await db.select().from(products).where(eq(products.tenantId, user.tenantId)).orderBy(desc(products.createdAt))
     return c.html(<Products currentPath={c.req.path} products={allProducts} />)
   } catch (e) {
     console.error(e)
@@ -202,11 +361,13 @@ app.get('/products', async (c) => {
 
 app.post('/api/products', async (c) => {
   try {
+    const user = c.get('user') as any;
     const db = createDb(c.env.DB)
     const body = await c.req.parseBody()
     
     await db.insert(products).values({
       id: crypto.randomUUID(),
+      tenantId: user.tenantId,
       name: body['name'] as string,
       price: parseInt(body['price'] as string) || 0,
       description: body['description'] as string,
@@ -224,7 +385,8 @@ app.post('/api/products', async (c) => {
 
 app.get('/orders', async (c) => {
   try {
-    const { results } = await c.env.DB.prepare("SELECT * FROM orders ORDER BY created_at DESC").all()
+    const user = c.get('user') as any;
+    const { results } = await c.env.DB.prepare("SELECT * FROM orders WHERE tenant_id = ? ORDER BY created_at DESC").bind(user.tenantId).all()
     return c.html(<Orders currentPath={c.req.path} orders={results as any[]} />)
   } catch (e) {
     console.error(e)
@@ -237,8 +399,9 @@ app.post('/api/upgrade', async (c) => {
     const body = await c.req.parseBody()
     const targetPlan = body['target_plan'] as string
     
+    const user = c.get('user') as any;
     const txId = crypto.randomUUID()
-    const tenantId = "tenant-local-dev-123" // Simulasi
+    const tenantId = user.tenantId
     
     await c.env.DB.prepare(
       "INSERT INTO transactions (id, tenant_id, type, amount, status, details) VALUES (?, ?, ?, ?, ?, ?)"
@@ -258,13 +421,14 @@ app.post('/api/upgrade', async (c) => {
   }
 })
 
-app.post('/api/orders/update', async (c) => {
+app.post('/api/orders', async (c) => {
   try {
+    const user = c.get('user') as any;
     const body = await c.req.parseBody()
     const id = body['id'] as string
     const status = body['status'] as string
     if (id && status) {
-      await c.env.DB.prepare("UPDATE orders SET status = ? WHERE id = ?").bind(status, id).run()
+      await c.env.DB.prepare("UPDATE orders SET status = ? WHERE id = ? AND tenant_id = ?").bind(status, id, user.tenantId).run()
     }
     return c.redirect('/orders')
   } catch (e) {
@@ -276,9 +440,10 @@ app.post('/api/orders/update', async (c) => {
 
 app.get('/learn', async (c) => {
   try {
+    const user = c.get('user') as any;
     const { results } = await c.env.DB.prepare(
-      "SELECT c.*, (SELECT COUNT(*) FROM lessons l WHERE l.course_id = c.id) as lesson_count FROM courses c ORDER BY c.created_at DESC"
-    ).all()
+      "SELECT c.*, (SELECT COUNT(*) FROM lessons l WHERE l.course_id = c.id AND l.tenant_id = ?) as lesson_count FROM courses c WHERE c.tenant_id = ? ORDER BY c.created_at DESC"
+    ).bind(user.tenantId, user.tenantId).all()
     return c.html(<Learn currentPath={c.req.path} courses={results as any[]} />)
   } catch (e) {
     return c.html(<Learn currentPath={c.req.path} courses={[]} />)
@@ -287,10 +452,11 @@ app.get('/learn', async (c) => {
 
 app.get('/learn/:courseId/lessons', async (c) => {
   try {
+    const user = c.get('user') as any;
     const courseId = c.req.param('courseId')
-    const course: any = await c.env.DB.prepare("SELECT * FROM courses WHERE id = ?").bind(courseId).first()
+    const course: any = await c.env.DB.prepare("SELECT * FROM courses WHERE id = ? AND tenant_id = ?").bind(courseId, user.tenantId).first()
     if (!course) return c.redirect('/learn')
-    const { results: lessons } = await c.env.DB.prepare("SELECT * FROM lessons WHERE course_id = ? ORDER BY order_index ASC").bind(courseId).all()
+    const { results: lessons } = await c.env.DB.prepare("SELECT * FROM lessons WHERE course_id = ? AND tenant_id = ? ORDER BY order_index ASC").bind(courseId, user.tenantId).all()
     return c.html(<Lessons currentPath={c.req.path} course={course} lessons={lessons as any[]} />)
   } catch (e) {
     return c.redirect('/learn')
@@ -299,6 +465,7 @@ app.get('/learn/:courseId/lessons', async (c) => {
 
 app.post('/api/learn/course', async (c) => {
   try {
+    const user = c.get('user') as any;
     const body = await c.req.parseBody()
     const id = body['id'] as string
     const title = body['title'] as string
@@ -308,14 +475,14 @@ app.post('/api/learn/course', async (c) => {
     const is_published = body['is_published'] === '1' ? 1 : 0
     if (id) {
       await c.env.DB.prepare(
-        "UPDATE courses SET title=?, description=?, cover_image=?, price=?, is_published=? WHERE id=?"
-      ).bind(title, description||null, cover_image||null, price, is_published, id).run()
+        "UPDATE courses SET title=?, description=?, cover_image=?, price=?, is_published=? WHERE id=? AND tenant_id=?"
+      ).bind(title, description||null, cover_image||null, price, is_published, id, user.tenantId).run()
     } else {
       const newId = crypto.randomUUID()
       const slug = title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)+/g,'') + '-' + Date.now().toString().slice(-4)
       await c.env.DB.prepare(
-        "INSERT INTO courses (id, title, slug, description, cover_image, price, is_published) VALUES (?,?,?,?,?,?,?)"
-      ).bind(newId, title, slug, description||null, cover_image||null, price, is_published).run()
+        "INSERT INTO courses (id, tenant_id, title, slug, description, cover_image, price, is_published) VALUES (?,?,?,?,?,?,?,?)"
+      ).bind(newId, user.tenantId, title, slug, description||null, cover_image||null, price, is_published).run()
     }
     return c.redirect('/learn')
   } catch (e) {
@@ -326,10 +493,11 @@ app.post('/api/learn/course', async (c) => {
 
 app.post('/api/learn/course/delete', async (c) => {
   try {
+    const user = c.get('user') as any;
     const body = await c.req.parseBody()
     const id = body['id'] as string
-    await c.env.DB.prepare("DELETE FROM lessons WHERE course_id = ?").bind(id).run()
-    await c.env.DB.prepare("DELETE FROM courses WHERE id = ?").bind(id).run()
+    await c.env.DB.prepare("DELETE FROM lessons WHERE course_id = ? AND tenant_id = ?").bind(id, user.tenantId).run()
+    await c.env.DB.prepare("DELETE FROM courses WHERE id = ? AND tenant_id = ?").bind(id, user.tenantId).run()
     return c.redirect('/learn')
   } catch (e) {
     return c.text('Error', 500)
@@ -338,6 +506,7 @@ app.post('/api/learn/course/delete', async (c) => {
 
 app.post('/api/learn/lesson', async (c) => {
   try {
+    const user = c.get('user') as any;
     const body = await c.req.parseBody()
     const id = body['id'] as string
     const course_id = body['course_id'] as string
@@ -347,12 +516,12 @@ app.post('/api/learn/lesson', async (c) => {
     const is_preview = body['is_preview'] === '1' ? 1 : 0
     if (id) {
       await c.env.DB.prepare(
-        "UPDATE lessons SET title=?, content=?, order_index=?, is_preview=? WHERE id=?"
-      ).bind(title, content||null, order_index, is_preview, id).run()
+        "UPDATE lessons SET title=?, content=?, order_index=?, is_preview=? WHERE id=? AND tenant_id=?"
+      ).bind(title, content||null, order_index, is_preview, id, user.tenantId).run()
     } else {
       await c.env.DB.prepare(
-        "INSERT INTO lessons (id, course_id, title, content, order_index, is_preview) VALUES (?,?,?,?,?,?)"
-      ).bind(crypto.randomUUID(), course_id, title, content||null, order_index, is_preview).run()
+        "INSERT INTO lessons (id, tenant_id, course_id, title, content, order_index, is_preview) VALUES (?,?,?,?,?,?,?)"
+      ).bind(crypto.randomUUID(), user.tenantId, course_id, title, content||null, order_index, is_preview).run()
     }
     return c.redirect(`/learn/${course_id}/lessons`)
   } catch (e) {
@@ -363,10 +532,11 @@ app.post('/api/learn/lesson', async (c) => {
 
 app.post('/api/learn/lesson/delete', async (c) => {
   try {
+    const user = c.get('user') as any;
     const body = await c.req.parseBody()
     const id = body['id'] as string
     const course_id = body['course_id'] as string
-    await c.env.DB.prepare("DELETE FROM lessons WHERE id = ?").bind(id).run()
+    await c.env.DB.prepare("DELETE FROM lessons WHERE id = ? AND tenant_id = ?").bind(id, user.tenantId).run()
     return c.redirect(`/learn/${course_id}/lessons`)
   } catch (e) {
     return c.text('Error', 500)
@@ -377,7 +547,8 @@ app.get('/settings', async (c) => {
   const isSaved = c.req.query('saved') === 'true'
   const upgradeRequested = c.req.query('upgrade_requested') === 'true'
   try {
-    const { results } = await c.env.DB.prepare("SELECT * FROM settings").all()
+    const user = c.get('user') as any;
+    const { results } = await c.env.DB.prepare("SELECT * FROM settings WHERE tenant_id = ?").bind(user.tenantId).all()
     const settings = results.reduce((acc: any, curr: any) => {
       acc[curr.key] = curr.value
       return acc
@@ -390,7 +561,8 @@ app.get('/settings', async (c) => {
 
 app.get('/redirects', async (c) => {
   try {
-    const { results } = await c.env.DB.prepare("SELECT * FROM redirects ORDER BY created_at DESC").all()
+    const user = c.get('user') as any;
+    const { results } = await c.env.DB.prepare("SELECT * FROM redirects WHERE tenant_id = ? ORDER BY created_at DESC").bind(user.tenantId).all()
     return c.html(<Redirects currentPath={c.req.path} redirects={results} />)
   } catch (e) {
     return c.html(<Redirects currentPath={c.req.path} redirects={[]} />)
@@ -431,9 +603,10 @@ app.post('/api/upload', async (c) => {
   })
   
   try {
+    const user = c.get('user') as any;
     await c.env.DB.prepare(
-      "INSERT INTO media (id, filename, url, type, size, has_watermark) VALUES (?, ?, ?, ?, ?, ?)"
-    ).bind(crypto.randomUUID(), file.name, `/media/${key}`, file.type, file.size, hasWatermark).run()
+      "INSERT INTO media (id, tenant_id, filename, url, type, size, has_watermark) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    ).bind(crypto.randomUUID(), user.tenantId, file.name, `/media/${key}`, file.type, file.size, hasWatermark).run()
   } catch(e) {
     console.error('Failed to save media metadata:', e)
   }
@@ -442,6 +615,7 @@ app.post('/api/upload', async (c) => {
 })
 
 app.post('/api/vault/delete', async (c) => {
+  const user = c.get('user') as any;
   const body = await c.req.parseBody()
   const id = body['id'] as string
   const url = body['url'] as string
@@ -451,7 +625,7 @@ app.post('/api/vault/delete', async (c) => {
     await c.env.VAULT_BUCKET.delete(key)
   }
   if (id) {
-    await c.env.DB.prepare("DELETE FROM media WHERE id = ?").bind(id).run()
+    await c.env.DB.prepare("DELETE FROM media WHERE id = ? AND tenant_id = ?").bind(id, user.tenantId).run()
   }
   return c.redirect('/vault')
 })
@@ -473,6 +647,7 @@ app.get('/media/:key', async (c) => {
 // --- RUTE API (D1 DATABASE) ---
 
 app.post('/api/posts', async (c) => {
+  const user = c.get('user') as any;
   const body = await c.req.parseBody()
   const id = body['id'] as string
   const title = body['title'] as string
@@ -484,7 +659,7 @@ app.post('/api/posts', async (c) => {
   const action = body['action'] as string // 'delete' or 'save'
   
   if (action === 'delete' && id) {
-    await c.env.DB.prepare("DELETE FROM posts WHERE id = ?").bind(id).run()
+    await c.env.DB.prepare("DELETE FROM posts WHERE id = ? AND tenant_id = ?").bind(id, user.tenantId).run()
     return c.redirect('/posts')
   }
 
@@ -492,30 +667,37 @@ app.post('/api/posts', async (c) => {
 
   if (id) {
     await c.env.DB.prepare(
-      "UPDATE posts SET title = ?, content = ?, metadata = ?, status = ?, is_premium = ?, price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
-    ).bind(title, content, metadata || null, status, is_premium, price, id).run()
+      "UPDATE posts SET title = ?, content = ?, metadata = ?, status = ?, is_premium = ?, price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tenant_id = ?"
+    ).bind(title, content, metadata || null, status, is_premium, price, id, user.tenantId).run()
   } else {
     const newId = crypto.randomUUID()
     const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now().toString().slice(-4)
     await c.env.DB.prepare(
-      "INSERT INTO posts (id, title, slug, content, metadata, status, is_premium, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-    ).bind(newId, title, slug, content || '', metadata || null, status, is_premium, price).run()
+      "INSERT INTO posts (id, tenant_id, title, slug, content, metadata, status, is_premium, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    ).bind(newId, user.tenantId, title, slug, content || '', metadata || null, status, is_premium, price).run()
   }
   
   return c.redirect('/posts')
 })
 
 app.post('/api/settings', async (c) => {
+  const user = c.get('user') as any;
   const body = await c.req.parseBody()
   
   const statements = []
   for (const [key, value] of Object.entries(body)) {
-    if (typeof value === 'string' && value.trim() !== '') {
-      statements.push(
-        c.env.DB.prepare(
-          "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?"
-        ).bind(key, value, value)
-      )
+    if (typeof value === 'string') {
+      if (value.trim() !== '') {
+        statements.push(
+          c.env.DB.prepare(
+            "INSERT INTO settings (key, tenant_id, value) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = ?"
+          ).bind(key, user.tenantId, value, value)
+        )
+      } else {
+        statements.push(
+          c.env.DB.prepare("DELETE FROM settings WHERE key = ? AND tenant_id = ?").bind(key, user.tenantId)
+        )
+      }
     }
   }
 
@@ -528,6 +710,7 @@ app.post('/api/settings', async (c) => {
 })
 
 app.post('/api/redirects', async (c) => {
+  const user = c.get('user') as any;
   const body = await c.req.parseBody()
   const id = body['id'] as string
   const source_url = body['source_url'] as string
@@ -536,17 +719,17 @@ app.post('/api/redirects', async (c) => {
   const action = body['action'] as string
 
   if (action === 'delete' && id) {
-    await c.env.DB.prepare("DELETE FROM redirects WHERE id = ?").bind(id).run()
+    await c.env.DB.prepare("DELETE FROM redirects WHERE id = ? AND tenant_id = ?").bind(id, user.tenantId).run()
   } else if (source_url && target_url) {
     const newId = id || crypto.randomUUID()
     if (id) {
        await c.env.DB.prepare(
-         "UPDATE redirects SET source_url = ?, target_url = ?, status_code = ? WHERE id = ?"
-       ).bind(source_url, target_url, status_code, id).run()
+         "UPDATE redirects SET source_url = ?, target_url = ?, status_code = ? WHERE id = ? AND tenant_id = ?"
+       ).bind(source_url, target_url, status_code, id, user.tenantId).run()
     } else {
        await c.env.DB.prepare(
-         "INSERT INTO redirects (id, source_url, target_url, status_code) VALUES (?, ?, ?, ?)"
-       ).bind(newId, source_url, target_url, status_code).run()
+         "INSERT INTO redirects (id, tenant_id, source_url, target_url, status_code) VALUES (?, ?, ?, ?, ?)"
+       ).bind(newId, user.tenantId, source_url, target_url, status_code).run()
     }
   }
 
@@ -629,10 +812,11 @@ app.post('/api/import-wp', async (c) => {
       const finalSlug = originalSlug + '-' + crypto.randomUUID().slice(0, 4) // prevent collision
 
       const newId = crypto.randomUUID()
+      const user = c.get('user') as any;
       statements.push(
         c.env.DB.prepare(
-          "INSERT INTO posts (id, title, slug, content, metadata, status) VALUES (?, ?, ?, ?, ?, 'published')"
-        ).bind(newId, title, finalSlug, JSON.stringify(editorData), null)
+          "INSERT INTO posts (id, tenant_id, title, slug, content, metadata, status) VALUES (?, ?, ?, ?, ?, ?, 'published')"
+        ).bind(newId, user.tenantId, title, finalSlug, JSON.stringify(editorData), null)
       )
     }
 
