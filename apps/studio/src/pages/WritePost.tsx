@@ -427,8 +427,4 @@ export const WritePost: FC<{ currentPath: string, post?: any }> = ({ currentPath
       `}} />
     </Layout>
   )
-});
-      `}} />
-    </Layout>
-  )
 }
