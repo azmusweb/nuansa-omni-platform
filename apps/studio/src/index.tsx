@@ -294,10 +294,43 @@ app.get('/domains', async (c) => {
  try {
  const user = c.get('user') as any;
  const { results } = await c.env.DB.prepare("SELECT * FROM domains WHERE tenant_id = ? ORDER BY created_at DESC").bind(user.tenantId).all()
- return c.html(<Domains currentPath={c.req.path} domains={results as any[]} />)
+ 
+ const { results: settingsResults } = await c.env.DB.prepare("SELECT * FROM settings WHERE tenant_id = ?").bind(user.tenantId).all()
+ const settings = settingsResults.reduce((acc: any, curr: any) => {
+ acc[curr.key] = curr.value
+ return acc
+ }, {})
+ 
+ const activeTenant = c.get('activeTenant') as any;
+ if (activeTenant && activeTenant.plan) {
+ settings.plan = activeTenant.plan;
+ }
+
+ return c.html(<Domains currentPath={c.req.path} domains={results as any[]} settings={settings} />)
  } catch (e) {
  console.error('Failed to load domains from DB:', e)
- return c.html(<Domains currentPath={c.req.path} domains={[]} />)
+ return c.html(<Domains currentPath={c.req.path} domains={[]} settings={{}} />)
+ }
+})
+
+app.post('/api/domains/subdomain', async (c) => {
+ try {
+ const user = c.get('user') as any;
+ const body = await c.req.parseBody();
+ const subdomain = body['subdomain'] as string;
+ 
+ if (subdomain) {
+ const cleanSub = subdomain.toLowerCase().replace(/[^a-z0-9-]/g, '');
+ await c.env.DB.prepare(`
+ INSERT INTO settings (id, tenant_id, key, value, updated_at)
+ VALUES (?, ?, 'subdomain', ?, ?)
+ ON CONFLICT(tenant_id, key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at
+ `).bind(crypto.randomUUID(), user.tenantId, cleanSub, Date.now()).run();
+ }
+ return c.redirect('/domains');
+ } catch (e) {
+ console.error(e);
+ return c.redirect('/domains?error=true');
  }
 })
 
